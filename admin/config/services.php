@@ -47,4 +47,12 @@ return [
         ),
     ],
 
+    /*
+    | Token estático (Bearer) para build SSG / integrações que não usam login.
+    | Rotas em middleware api.public aceitam este token OU JWT.
+    */
+    'api' => [
+        'read_token' => env('API_READ_TOKEN'),
+    ],
+
 ];

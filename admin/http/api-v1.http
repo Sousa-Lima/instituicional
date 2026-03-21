@@ -1,0 +1,146 @@
+# REST Client (VS Code / Cursor) — API v1 SLC
+# Extensão: https://marketplace.visualstudio.com/items?itemName=humao.rest-client
+#
+# 1. Ajuste @baseUrl; opcionalmente @apiReadToken (build CI) para rotas "públicas".
+# 2. Corra "Login (JWT)" para usar {{login.response.body.access_token}} em me/logout e também em conteúdo/lead.
+# 3. Utilizador de teste (após db:seed): test@example.com / password
+#
+# Regras: auth/me e logout → só JWT. Conteúdo + lead → JWT OU API_READ_TOKEN (Bearer).
+
+# Laravel: php artisan serve → http://127.0.0.1:8000
+@baseUrl = https://api.sousalimaconsultoria.com.br
+@apiReadToken = 7YceOakGswi3tKRPeAfzShbHvg1smqJp07ywMGkUXeI=
+@jwt =
+
+### Variáveis alternativas (descomente uma linha em @baseUrl se preferir)
+# @baseUrl = https://api.sousalimaconsultoria.com.br
+
+############################################
+# Auth — JWT (tymon/jwt-auth)
+############################################
+
+# @name login
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password"
+}
+
+### Me — só JWT
+GET {{baseUrl}}/api/v1/auth/me
+Authorization: Bearer {{login.response.body.access_token}}
+Accept: application/json
+
+### Me — JWT (token manual em @jwt)
+# GET {{baseUrl}}/api/v1/auth/me
+# Authorization: Bearer {{jwt}}
+# Accept: application/json
+
+### Refresh — JWT (Bearer com token ainda válido dentro da janela de refresh)
+POST {{baseUrl}}/api/v1/auth/refresh
+Authorization: Bearer {{login.response.body.access_token}}
+Accept: application/json
+
+### Logout — só JWT
+POST {{baseUrl}}/api/v1/auth/logout
+Authorization: Bearer {{login.response.body.access_token}}
+Accept: application/json
+
+### Leads — listagem (só JWT)
+GET {{baseUrl}}/api/v1/leads
+Authorization: Bearer {{login.response.body.access_token}}
+Accept: application/json
+
+### Leads — listagem (paginação: ?page=1&per_page=20)
+# GET {{baseUrl}}/api/v1/leads?page=1&per_page=20
+# Authorization: Bearer {{login.response.body.access_token}}
+# Accept: application/json
+
+############################################
+# Conteúdo — JWT ou API_READ_TOKEN (site / build)
+############################################
+
+### Slugs — com JWT (login acima)
+GET {{baseUrl}}/api/v1/content/slugs
+Authorization: Bearer {{login.response.body.access_token}}
+Accept: application/json
+
+### Slugs — com API_READ_TOKEN (ex.: CI)
+# GET {{baseUrl}}/api/v1/content/slugs
+# Authorization: Bearer {{apiReadToken}}
+# Accept: application/json
+
+### Cases — lista
+GET {{baseUrl}}/api/v1/cases
+Authorization: Bearer {{login.response.body.access_token}}
+Accept: application/json
+
+### Cases — lista (todos os status)
+GET {{baseUrl}}/api/v1/cases?status=draft
+Authorization: Bearer {{login.response.body.access_token}}
+Accept: application/json
+
+### Case — por slug (ajuste o slug)
+GET {{baseUrl}}/api/v1/cases/modernizacao-plataforma-logistica-ai
+Authorization: Bearer {{login.response.body.access_token}}
+Accept: application/json
+
+### Services — lista
+GET {{baseUrl}}/api/v1/services
+Authorization: Bearer {{login.response.body.access_token}}
+Accept: application/json
+
+### Service — por slug
+GET {{baseUrl}}/api/v1/services/consultoria-processos
+Authorization: Bearer {{login.response.body.access_token}}
+Accept: application/json
+
+############################################
+# Lead — JWT ou API_READ_TOKEN
+############################################
+
+### Lead — contacto (corpo completo) com JWT
+POST {{baseUrl}}/api/v1/lead/contact
+Authorization: Bearer {{login.response.body.access_token}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Maria Teste",
+  "email": "maria@empresa.com.br",
+  "company": "Empresa XYZ Ltda",
+  "job_title": "CTO",
+  "interest": "software",
+  "business_stage": "validation",
+  "message": "Mensagem de teste via REST Client.",
+  "consent_lgpd": true,
+  "source_path": "/contato"
+}
+
+### Lead — mínimo (campos obrigatórios reduzidos)
+POST {{baseUrl}}/api/v1/lead/contact
+Authorization: Bearer {{login.response.body.access_token}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "João Mínimo",
+  "email": "joao@empresa.com.br",
+  "company": "ACME",
+  "interest": "cloud",
+  "message": "Teste mínimo",
+  "consent_lgpd": true
+}
+
+############################################
+# OpenAPI / Swagger (browser ou GET simples)
+############################################
+
+### Documentação Swagger UI (abrir no browser)
+# GET {{baseUrl}}/api/documentation
+
+### JSON OpenAPI (rota Laravel L5-Swagger)
+# GET {{baseUrl}}/docs
