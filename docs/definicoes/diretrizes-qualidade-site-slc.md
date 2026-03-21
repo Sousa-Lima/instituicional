@@ -21,6 +21,7 @@ Diretrizes para o site institucional da **Sousa Lima Consultoria**, alinhadas à
 | **Peso por página** | Máximo **1,5 MB** de transferência total (HTML + CSS + JS + imagens + fontes) na carga inicial típica; preferir lazy-load fora da dobra e formatos compactos. |
 | **APIs** | Se houver chamadas a API, respostas com **`Cache-Control`** explícito e alinhado ao tipo de dado (ex.: dados estáveis com `max-age` razoável; nada de `no-store` sem necessidade). |
 | **Ligação com Core Web Vitals** | O budget ajuda LCP e TTFB; revisar [qualidade-web-core-vitals.md](qualidade-web-core-vitals.md) em cada release. |
+| **Animações (Framer Motion)** | Ilhas pequenas, **`client:visible`** quando possível, tokens centralizados — [tokens-animacao-framer-slc.md](tokens-animacao-framer-slc.md). |
 
 ## 3. Conversão e UX
 

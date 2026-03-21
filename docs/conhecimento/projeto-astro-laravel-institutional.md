@@ -4,7 +4,7 @@
 
 **Arquitetura de código:** **dois repositórios** — frontend (este escopo: **Astro**) e **admin** (**Laravel** + Inertia + React); não monorepo — ver [stack-tecnico-slc.md](../definicoes/stack-tecnico-slc.md). Este documento foca no **site (frontend)** e na **API do admin** consumida no **build**; **área do cliente** é **posterior**.
 
-Documentos relacionados: [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md), [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md), [referencia-layout-sites.md](referencia-layout-sites.md), [conteudo-mensagens-referencia.md](conteudo-mensagens-referencia.md), [qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md), [diretrizes-qualidade-site-slc.md](../definicoes/diretrizes-qualidade-site-slc.md), [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md), [paleta-cores.md](../definicoes/paleta-cores.md), [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md).
+Documentos relacionados: [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md), [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md), [referencia-layout-sites.md](referencia-layout-sites.md), [conteudo-mensagens-referencia.md](conteudo-mensagens-referencia.md), [qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md), [diretrizes-qualidade-site-slc.md](../definicoes/diretrizes-qualidade-site-slc.md), [tokens-animacao-framer-slc.md](../definicoes/tokens-animacao-framer-slc.md), [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md), [paleta-cores.md](../definicoes/paleta-cores.md), [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md).
 
 ---
 
@@ -15,7 +15,7 @@ Documentos relacionados: [integracao-astro-ssg-laravel.md](integracao-astro-ssg-
 | **Framework** | **Astro** — **SSG** por padrão; **modo hybrid** (SSR/API) apenas para rotas que exijam conteúdo protegido ou dinâmico no servidor. |
 | **Estilo** | **Tailwind CSS**. Usar **Bento Grid** e **glassmorphism** onde fizer sentido visual e de hierarquia, sem prejudicar contraste ([WCAG](#4-seo--acessibilidade-wcag-21)). |
 | **Componentes** | **Shadcn/ui** (tipicamente via **React** nas ilhas). Manter interatividade apenas em **Astro Islands** com `client:load` ou `client:visible` conforme necessidade — o restante permanece HTML estático. |
-| **Animações** | **Framer Motion** nas ilhas React para entradas suaves de seções; respeitar **`prefers-reduced-motion`** (reduzir ou desativar movimento). |
+| **Animações** | **Framer Motion** nas ilhas React — estilo **discreto / enterprise**; tokens (easings, durações, presets) em [tokens-animacao-framer-slc.md](../definicoes/tokens-animacao-framer-slc.md); **`prefers-reduced-motion`** obrigatório; ilhas com animação preferir **`client:visible`**. |
 
 ---
 

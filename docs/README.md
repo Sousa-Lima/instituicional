@@ -25,6 +25,7 @@ Base de documentação interna para evoluir até a publicação do site e dos se
 | [definicoes/conteudo-juridico-semente.md](definicoes/conteudo-juridico-semente.md) | Conteúdo/jurídico: referência inicial e políticas. |
 | [definicoes/compliance-ferramentas.md](definicoes/compliance-ferramentas.md) | LGPD: cookies, analytics, documentos legais. |
 | [definicoes/paleta-cores.md](definicoes/paleta-cores.md) | Base de cores do logo SLC, tokens e variáveis CSS para site/sistema. |
+| [definicoes/tokens-animacao-framer-slc.md](definicoes/tokens-animacao-framer-slc.md) | Easings, durações, presets Framer Motion, `prefers-reduced-motion`, Astro Islands e Partytown. |
 | [definicoes/qualidade-web-core-vitals.md](definicoes/qualidade-web-core-vitals.md) | Core Web Vitals (LCP, INP, CLS) e métricas de diagnóstico (FCP, TBT, SI, TTFB). |
 | [definicoes/diretrizes-qualidade-site-slc.md](definicoes/diretrizes-qualidade-site-slc.md) | Diretrizes SLC: semântica, budget 1,5 MB, CTA/formulários, SEO e breadcrumbs. |
 | [conhecimento/referencia-layout-sites.md](conhecimento/referencia-layout-sites.md) | Inspiração de estrutura e UX ([Sagitta Digital](https://sagittadigital.com.br/), [Venturus](https://www.venturus.org.br/)). |
