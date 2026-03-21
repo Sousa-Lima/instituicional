@@ -18,7 +18,7 @@ Disponibilizar o site e a aplicação web da **Sousa Lima Consultoria** com HTTP
 
 Orquestração adotada para o momento: **Docker Swarm** com rede overlay para serviços internos e rede pública para o proxy ([planejamento-e-faltantes-site-institucional.md](planejamento-e-faltantes-site-institucional.md)).
 
-**Stack de referência (frontend nginx, static, Laravel, worker):** [`deploy/slc.yaml`](../deploy/slc.yaml) — `docker stack deploy -c deploy/slc.yaml slc`. Exige Traefik com resolver `le`, rede `traefik-public` e secrets nomeados no próprio ficheiro; PostgreSQL e Redis devem existir onde `DB_HOST` / `REDIS_HOST` apontarem. Persistência em **diretórios no host** (`/srv/sistemas/slc/data/...`, bind mounts), não em volumes Docker nomeados — ver comentários no topo do YAML.
+**Stack de referência (frontend nginx, static, Laravel, worker, PostgreSQL, Redis):** [`deploy/slc.yaml`](../deploy/slc.yaml) — `docker stack deploy -c deploy/slc.yaml slc`. Exige Traefik com resolver `le`, rede `traefik-public` e secrets nomeados no próprio ficheiro. Persistência em **diretórios no host** (`/srv/sistemas/slc/data/...`, bind mounts), incluindo dados de Postgres e Redis — ver comentários no topo do YAML.
 
 **Procedimento passo a passo (deploy em produção):** [procedimento-deploy-producao-slc.md](procedimento-deploy-producao-slc.md).
 

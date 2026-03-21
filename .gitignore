@@ -1,3 +1,5 @@
 # Conteúdo persistido no servidor (bind mounts em deploy/slc.yaml)
 /data/storage/
 /data/frontend/dist/
+/data/postgres/
+/data/redis/

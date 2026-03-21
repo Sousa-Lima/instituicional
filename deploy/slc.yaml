@@ -3,15 +3,24 @@
 # Deploy: docker stack deploy -c deploy/slc.yaml slc
 #
 # Dados persistentes no HOST (bind mounts), não em volumes Docker nomeados.
-# Criar no servidor (ou em cada nó que corra réplicas com estes serviços):
-#   mkdir -p /srv/sistemas/slc/data/storage/app/public /srv/sistemas/slc/data/frontend/dist
-#   chown -R <uid-php>:<gid-php> /srv/sistemas/slc/data/storage   # alinhar ao utilizador do contentor
+# Criar no servidor (antes do primeiro deploy):
+#   mkdir -p /srv/sistemas/slc/data/storage/app/public \
+#            /srv/sistemas/slc/data/frontend/dist \
+#            /srv/sistemas/slc/data/postgres \
+#            /srv/sistemas/slc/data/redis
+#   chown -R <uid-php>:<gid-php> /srv/sistemas/slc/data/storage
+#   chown -R 70:70 /srv/sistemas/slc/data/postgres    # postgres:16-alpine (uid=70)
+#   chown -R 999:1000 /srv/sistemas/slc/data/redis     # redis:7-alpine (uid=999)
 #
 # Pré-requisitos:
 #   - Rede overlay externa traefik-public (partilhada com o Traefik).
 #   - Proxy Traefik com certresolver "le" (Let's Encrypt) nos entrypoints web/websecure.
-#   - Secrets: slc_db_password, slc_app_key, slc_jwt_secret (docker secret create …).
-#   - PostgreSQL e Redis acessíveis nos hostnames DB_HOST / REDIS_HOST (outra stack ou externos).
+#   - Secrets Swarm (nomes específicos desta app — não colidem com outras stacks no mesmo host):
+#       slc_sousalima_db_password, slc_sousalima_app_key, slc_sousalima_jwt_secret,
+#       slc_sousalima_smtp_password  (ver comentário "Secrets" no final do ficheiro).
+#   - MAIL_USERNAME: endereço completo da caixa Microsoft 365 que envia (ex.: noreply@dominio).
+#   - SMTP Microsoft 365: smtp.office365.com:587 TLS — password no secret (conta com SMTP
+#     autenticado; MFA pode exigir password de aplicação — política Microsoft).
 #
 # Swarm: bind mounts são locais a cada nó; com replicas > 1, use o mesmo caminho em todos
 # os nós ou NFS (ou reduza réplicas para serviços que partilham estes paths).
@@ -36,17 +45,31 @@ x-app-defaults: &app-defaults
     DB_PORT: "5432"
     DB_DATABASE: slc_admin
     DB_USERNAME: slc_user
+    DB_PASSWORD_FILE: /run/secrets/slc_sousalima_db_password
+    APP_KEY_FILE: /run/secrets/slc_sousalima_app_key
+    JWT_SECRET_FILE: /run/secrets/slc_sousalima_jwt_secret
     REDIS_HOST: redis
     CACHE_STORE: redis
     SESSION_DRIVER: redis
     QUEUE_CONNECTION: redis
+    # Microsoft 365 / Office 365 (SMTP autenticado)
+    MAIL_MAILER: smtp
+    MAIL_HOST: smtp.office365.com
+    MAIL_PORT: "587"
+    MAIL_USERNAME: "everton.lima@sousalimaconsultoria.com.br"
+    MAIL_ENCRYPTION: tls
+    MAIL_PASSWORD_FILE: /run/secrets/slc_sousalima_smtp_password
+    MAIL_FROM_ADDRESS: noreply@sousalimaconsultoria.com.br
+    MAIL_FROM_NAME: "Sousa Lima Consultoria"
   secrets:
-    - source: slc_db_password
-      target: /run/secrets/db_password
-    - source: slc_app_key
-      target: /run/secrets/app_key
-    - source: slc_jwt_secret
-      target: /run/secrets/jwt_secret
+    - source: slc_sousalima_db_password
+      target: /run/secrets/slc_sousalima_db_password
+    - source: slc_sousalima_app_key
+      target: /run/secrets/slc_sousalima_app_key
+    - source: slc_sousalima_jwt_secret
+      target: /run/secrets/slc_sousalima_jwt_secret
+    - source: slc_sousalima_smtp_password
+      target: /run/secrets/slc_sousalima_smtp_password
   volumes:
     - type: bind
       source: /srv/sistemas/slc/data/storage/app
@@ -55,7 +78,74 @@ x-app-defaults: &app-defaults
       source: /srv/sistemas/slc/data/storage/app/public
       target: /var/www/html/public/storage
 
+# Healthcheck reutilizado nos serviços PHP (app, queue, scheduler)
+x-healthcheck-php: &healthcheck-php
+  test: ["CMD", "php", "artisan", "about"]
+  interval: 30s
+  timeout: 15s
+  retries: 3
+  start_period: 60s
+
+# Healthcheck nginx (validação de configuração; não depende de index.html)
+x-healthcheck-nginx: &healthcheck-nginx
+  test: ["CMD-SHELL", "nginx -t"]
+  interval: 30s
+  timeout: 5s
+  retries: 3
+  start_period: 10s
+
 services:
+
+  # ─── POSTGRESQL (persistência local no host) ───────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    networks:
+      - internal
+    environment:
+      POSTGRES_DB: slc_admin
+      POSTGRES_USER: slc_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/slc_sousalima_db_password
+    secrets:
+      - source: slc_sousalima_db_password
+        target: /run/secrets/slc_sousalima_db_password
+    volumes:
+      - type: bind
+        source: /srv/sistemas/slc/data/postgres
+        target: /var/lib/postgresql/data
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U slc_user -d slc_admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ─── REDIS (persistência local — AOF em /data) ─────────────────────────────
+  redis:
+    image: redis:7-alpine
+    networks:
+      - internal
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --dir /data
+    volumes:
+      - type: bind
+        source: /srv/sistemas/slc/data/redis
+        target: /data
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
   # ─── FRONTEND (ASTRO SSG) ──────────────────────────────────────────────────
   frontend:
@@ -67,6 +157,7 @@ services:
         source: /srv/sistemas/slc/data/frontend/dist
         target: /usr/share/nginx/html
         read_only: true
+    healthcheck: *healthcheck-nginx
     deploy:
       replicas: 2
       labels:
@@ -92,6 +183,7 @@ services:
         source: /srv/sistemas/slc/data/storage/app/public
         target: /usr/share/nginx/html/storage
         read_only: true
+    healthcheck: *healthcheck-nginx
     deploy:
       replicas: 2
       labels:
@@ -106,6 +198,7 @@ services:
   # ─── BACKEND API & ADMIN (LARAVEL) ──────────────────────────────
   app:
     <<: *app-defaults
+    healthcheck: *healthcheck-php
     deploy:
       replicas: 2
       labels:
@@ -121,6 +214,15 @@ services:
   queue:
     <<: *app-defaults
     command: php artisan queue:work --verbose --tries=3 --timeout=90
+    healthcheck: *healthcheck-php
+    deploy:
+      replicas: 1
+
+  # ─── SCHEDULER (CRON LARAVEL — 1 réplica) ────────────────────────────────
+  scheduler:
+    <<: *app-defaults
+    command: php artisan schedule:work --verbose
+    healthcheck: *healthcheck-php
     deploy:
       replicas: 1
 
@@ -131,10 +233,13 @@ networks:
     driver: overlay
     attachable: true
 
+# Nomes no Swarm (docker secret create …) — prefixo slc_sousalima_ para identificar esta stack
 secrets:
-  slc_db_password:
+  slc_sousalima_db_password:
     external: true
-  slc_app_key:
+  slc_sousalima_app_key:
     external: true
-  slc_jwt_secret:
+  slc_sousalima_jwt_secret:
+    external: true
+  slc_sousalima_smtp_password:
     external: true

@@ -77,8 +77,11 @@ Atualizado conforme decisões de produto e stack. Referências: [mapa-site-mvp-s
 
 ### Infra
 
-- [ ] `docker stack deploy` (ou equivalente) documentado para o Swarm — ver [procedimento-deploy-producao-slc.md](procedimento-deploy-producao-slc.md).
-- [ ] **Healthcheck** nos serviços Docker para o Swarm reiniciar/rotear corretamente (Laravel/API; artefato estático Astro conforme modelo de deploy).
+- [x] `docker stack deploy` documentado — [procedimento-deploy-producao-slc.md](procedimento-deploy-producao-slc.md).
+- [x] **Healthcheck** em todos os serviços do [`deploy/slc.yaml`](../../deploy/slc.yaml) (nginx, PHP, Postgres, Redis).
+- [x] **Scheduler** Laravel — serviço `scheduler` no `slc.yaml` (1 réplica).
+- [ ] Aplicar snippet de [`deploy/laravel/README.md`](../../deploy/laravel/README.md) no repositório **admin** (`config/database.php`).
+- [ ] **SMTP (Microsoft 365):** `MAIL_USERNAME` no `slc.yaml`; secret `slc_sousalima_smtp_password`; `config/mail.php` a ler `MAIL_PASSWORD_FILE` — [deploy/laravel/README.md](../../deploy/laravel/README.md).
 - [ ] **CI/CD** em **cada** repositório (frontend: build Astro + deploy; admin: testes Laravel + deploy API/painel).
 - [ ] Secrets e variáveis em produção.
 

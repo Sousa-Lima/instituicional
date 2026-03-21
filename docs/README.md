@@ -8,7 +8,7 @@ Base de documentação interna para evoluir até a publicação do site e dos se
 |--------|-----|
 | `conhecimento/` | Arquitetura, publicação, runbooks e notas técnicas. |
 | `definicoes/` | Glossário, decisões de produto, domínio e convenções. |
-| `deploy/` | Stack Swarm (`slc.yaml`); ver [deploy/README.md](../deploy/README.md) e [procedimento-deploy-producao-slc.md](conhecimento/procedimento-deploy-producao-slc.md). |
+| `deploy/` | Stack Swarm (`slc.yaml`), snippets Laravel (`deploy/laravel/`), [guia-deploy-e-atualizacao.md](../deploy/guia-deploy-e-atualizacao.md); ver [deploy/README.md](../deploy/README.md) e [procedimento-deploy-producao-slc.md](conhecimento/procedimento-deploy-producao-slc.md). |
 
 ## Documentos
 

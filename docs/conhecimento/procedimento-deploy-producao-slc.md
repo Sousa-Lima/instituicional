@@ -17,7 +17,11 @@ Runbook para publicar o site estático (Astro), ficheiros públicos Laravel, API
 | **static** | nginx a servir `storage/app/public` (uploads / públicos Laravel). |
 | **app** | Laravel (API + Filament/Inertia). |
 | **queue** | `php artisan queue:work`. |
-| **PostgreSQL / Redis** | Definidos em `DB_HOST` / `REDIS_HOST` — **fora** deste YAML (outra stack ou serviços já existentes na rede `internal`). |
+| **scheduler** | `php artisan schedule:work` — **1 réplica**. |
+| **postgres** | PostgreSQL 16; dados em `/srv/sistemas/slc/data/postgres` (bind mount). |
+| **redis** | Redis 7 com AOF; dados em `/srv/sistemas/slc/data/redis` (bind mount). |
+
+**Healthchecks:** todos os serviços têm `healthcheck` no [`deploy/slc.yaml`](../../deploy/slc.yaml) — nginx via `nginx -t`, PHP via `php artisan about`, Postgres `pg_isready`, Redis `redis-cli ping`.
 
 ---
 
@@ -59,6 +63,8 @@ Bind mounts — **não** usar volumes nomeados Docker para estes dados. Criar no
 ```bash
 sudo mkdir -p /srv/sistemas/slc/data/storage/app/public
 sudo mkdir -p /srv/sistemas/slc/data/frontend/dist
+sudo mkdir -p /srv/sistemas/slc/data/postgres
+sudo mkdir -p /srv/sistemas/slc/data/redis
 ```
 
 Permissões: alinhar o dono ao utilizador PHP dentro da imagem (ex.: `www-data` ou UID exposto pela imagem `eolimabr/php8.4-sousalima-multitenant`).
@@ -66,9 +72,13 @@ Permissões: alinhar o dono ao utilizador PHP dentro da imagem (ex.: `www-data` 
 ```bash
 # Exemplo (confirmar UID/GID no Dockerfile ou com: docker run --rm ... id)
 sudo chown -R www-data:www-data /srv/sistemas/slc/data/storage
+sudo chown -R 70:70 /srv/sistemas/slc/data/postgres    # postgres:16-alpine
+sudo chown -R 999:1000 /srv/sistemas/slc/data/redis    # redis:7-alpine
 ```
 
 O diretório `frontend/dist` pode ser propriedade de root ou do utilizador de deploy, desde que o contentor nginx consiga ler (normalmente modo `read_only: true` e `755`/`644`).
+
+**PostgreSQL:** o diretório `data/postgres` tem de estar **vazio** na primeira subida (ou já conter um cluster inicializado por esta mesma versão major). Não apagar em produção sem backup.
 
 ### 3.4 Certificados ACME (Traefik)
 
@@ -85,21 +95,33 @@ sudo chmod 600 /srv/swarm/letsencrypt/acme.json
 Criar **uma vez** (valores não versionados):
 
 ```bash
-echo -n 'valor-seguro-da-base' | docker secret create slc_db_password -
-echo -n 'base64:...' | docker secret create slc_app_key -
-echo -n 'segredo-jwt' | docker secret create slc_jwt_secret -
+echo -n 'valor-seguro-da-base' | docker secret create slc_sousalima_db_password -
+echo -n 'password-smtp-o365' | docker secret create slc_sousalima_smtp_password -
 ```
 
-O Laravel deve ler `APP_KEY` e palavra-passe da base a partir dos ficheiros montados em `/run/secrets/` conforme o teu `Dockerfile`/entrypoint (o `slc.yaml` mapeia os alvos `db_password`, `app_key`, `jwt_secret`). Ajustar nomes dos secrets se o código esperar outros paths.
+Para **APP_KEY** e **JWT**, usar geração adequada — ver [guia-deploy-e-atualizacao.md](../../deploy/guia-deploy-e-atualizacao.md) (`php artisan key:generate --show` e `openssl rand` para `slc_sousalima_jwt_secret`).
 
-### 3.6 PostgreSQL e Redis
+Os nomes usam o prefixo **`slc_sousalima_`** para não colidir com secrets de outras stacks no mesmo servidor. Os ficheiros no contentor são `/run/secrets/slc_sousalima_*` (ver [`deploy/laravel/README.md`](../../deploy/laravel/README.md)).
 
-A stack `slc` referencia `DB_HOST=postgres` e `REDIS_HOST=redis`. É necessário:
+O `slc.yaml` define `DB_PASSWORD_FILE`, `APP_KEY_FILE`, `JWT_SECRET_FILE` e `MAIL_PASSWORD_FILE` com esses caminhos. No **Laravel**, em `config/database.php` (e `mail.php` para Office 365), usar a password a partir do ficheiro quando a variável em claro não estiver definida, por exemplo:
 
-- Serviços com esses **nomes DNS** na rede **`internal`** (overlay comum), **ou**
-- Alterar `DB_HOST` / `REDIS_HOST` no YAML (ou via env em evolução futura) para apontar para serviços reais.
+```php
+'password' => env('DB_PASSWORD') ?: (
+    env('DB_PASSWORD_FILE') && is_readable(env('DB_PASSWORD_FILE'))
+        ? trim(file_get_contents(env('DB_PASSWORD_FILE')))
+        : ''
+),
+```
 
-Garantir que a base `slc_admin` e o utilizador `slc_user` existem e que a password coincide com `slc_db_password`.
+`APP_KEY`, JWT e password SMTP: ver snippets em [`deploy/laravel/README.md`](../../deploy/laravel/README.md) (`APP_KEY_FILE`, `JWT_SECRET_FILE`, `mail.php`).
+
+### 3.6 PostgreSQL e Redis (na mesma stack)
+
+Os serviços **`postgres`** e **`redis`** estão definidos em [`deploy/slc.yaml`](../../deploy/slc.yaml), na rede **`internal`**, com persistência em disco no host (`data/postgres`, `data/redis`). O hostname `postgres` / `redis` corresponde ao nome do serviço no Swarm.
+
+Na **primeira** subida, o Postgres cria a base `slc_admin` e o utilizador `slc_user` com a password do secret `slc_sousalima_db_password` (via `POSTGRES_PASSWORD_FILE`).
+
+**Migração a partir de nomes antigos** (`slc_db_password`, etc.): criar os novos secrets com os valores corretos, atualizar o stack com o `slc.yaml` atual e, quando validado, remover os secrets antigos com `docker secret rm` (após a stack já não os referenciar).
 
 ---
 
@@ -169,6 +191,7 @@ docker stack services slc
 docker service ps slc_app --no-trunc
 docker service logs slc_app -f
 docker service logs slc_frontend -f
+docker service logs slc_scheduler -f
 ```
 
 Testar HTTPS:
@@ -221,6 +244,8 @@ Os bind mounts apontam para caminhos **locais do nó**. Se `frontend`, `app` ou 
 |-----------|----------|
 | [`deploy/slc.yaml`](../../deploy/slc.yaml) | Serviços, labels Traefik, bind mounts, secrets. |
 | [`deploy/README.md`](../../deploy/README.md) | Entrada rápida e link para este procedimento. |
+| [`deploy/guia-deploy-e-atualizacao.md`](../../deploy/guia-deploy-e-atualizacao.md) | Passo a passo: secrets, variáveis, `docker stack deploy`, atualizações e rotação de secrets. |
+| [`deploy/laravel/README.md`](../../deploy/laravel/README.md) | Snippet para `config/database.php` (password via `DB_PASSWORD_FILE`). |
 | [base-publicacao.md](base-publicacao.md) | Visão geral e checklist curto. |
 | [dominios-e-ambiente.md](../definicoes/dominios-e-ambiente.md) | Marca e variáveis em nível conceitual. |
 
