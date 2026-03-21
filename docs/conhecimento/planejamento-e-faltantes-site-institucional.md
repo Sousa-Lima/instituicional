@@ -77,7 +77,7 @@ Atualizado conforme decisões de produto e stack. Referências: [mapa-site-mvp-s
 
 ### Infra
 
-- [ ] `docker stack deploy` (ou equivalente) documentado para o Swarm.
+- [ ] `docker stack deploy` (ou equivalente) documentado para o Swarm — ver [procedimento-deploy-producao-slc.md](procedimento-deploy-producao-slc.md).
 - [ ] **Healthcheck** nos serviços Docker para o Swarm reiniciar/rotear corretamente (Laravel/API; artefato estático Astro conforme modelo de deploy).
 - [ ] **CI/CD** em **cada** repositório (frontend: build Astro + deploy; admin: testes Laravel + deploy API/painel).
 - [ ] Secrets e variáveis em produção.

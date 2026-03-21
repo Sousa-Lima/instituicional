@@ -8,13 +8,14 @@ Base de documentação interna para evoluir até a publicação do site e dos se
 |--------|-----|
 | `conhecimento/` | Arquitetura, publicação, runbooks e notas técnicas. |
 | `definicoes/` | Glossário, decisões de produto, domínio e convenções. |
-| `deploy/` | Stack Swarm de referência (`slc.yaml`) — ver [base-publicacao.md](conhecimento/base-publicacao.md). |
+| `deploy/` | Stack Swarm (`slc.yaml`); ver [deploy/README.md](../deploy/README.md) e [procedimento-deploy-producao-slc.md](conhecimento/procedimento-deploy-producao-slc.md). |
 
 ## Documentos
 
 | Documento | Descrição |
 |-----------|-----------|
 | [conhecimento/base-publicacao.md](conhecimento/base-publicacao.md) | Visão de infraestrutura, checklist e evolução para produção. |
+| [conhecimento/procedimento-deploy-producao-slc.md](conhecimento/procedimento-deploy-producao-slc.md) | Runbook: Swarm, Traefik, DNS, secrets, dados no host, build Astro, stack `slc`, verificação e rollback. |
 | [conhecimento/normas-arquitetura-backend-infra.md](conhecimento/normas-arquitetura-backend-infra.md) | SSG/ISR, imagens, terceiros e security headers (CSP, HSTS, framing). |
 | [conhecimento/projeto-astro-laravel-institutional.md](conhecimento/projeto-astro-laravel-institutional.md) | Stack Astro + Laravel 12: frontend, Core Web Vitals, API, JWT, SEO, WCAG, clean code. |
 | [definicoes/dominios-e-ambiente.md](definicoes/dominios-e-ambiente.md) | Marca, domínio, ambientes e variáveis de ambiente em nível conceitual. |

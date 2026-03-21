@@ -2,18 +2,23 @@
 #
 # Deploy: docker stack deploy -c deploy/slc.yaml slc
 #
+# Dados persistentes no HOST (bind mounts), não em volumes Docker nomeados.
+# Criar no servidor (ou em cada nó que corra réplicas com estes serviços):
+#   mkdir -p /srv/sistemas/slc/data/storage/app/public /srv/sistemas/slc/data/frontend/dist
+#   chown -R <uid-php>:<gid-php> /srv/sistemas/slc/data/storage   # alinhar ao utilizador do contentor
+#
 # Pré-requisitos:
 #   - Rede overlay externa traefik-public (partilhada com o Traefik).
 #   - Proxy Traefik com certresolver "le" (Let's Encrypt) nos entrypoints web/websecure.
 #   - Secrets: slc_db_password, slc_app_key, slc_jwt_secret (docker secret create …).
-#   - PostgreSQL e Redis acessíveis nos hostnames DB_HOST / REDIS_HOST (este ficheiro
-#     assume serviços postgres e redis noutra stack ou nós externos; ajustar se necessário).
+#   - PostgreSQL e Redis acessíveis nos hostnames DB_HOST / REDIS_HOST (outra stack ou externos).
 #
-# Frontend: imagem nginx genérica — publicar artefactos Astro (SSG) via CI (imagem própria
-# ou volume montado); caso contrário o contentor serve a página default do nginx.
+# Swarm: bind mounts são locais a cada nó; com replicas > 1, use o mesmo caminho em todos
+# os nós ou NFS (ou reduza réplicas para serviços que partilham estes paths).
 
 version: '3.9'
 
+# Caminhos no host (ajuste uma vez; Laravel: storage/app e o mesmo ramo public/ em public/storage)
 x-app-defaults: &app-defaults
   image: eolimabr/php8.4-sousalima-multitenant:latest
   working_dir: /var/www/html
@@ -42,6 +47,13 @@ x-app-defaults: &app-defaults
       target: /run/secrets/app_key
     - source: slc_jwt_secret
       target: /run/secrets/jwt_secret
+  volumes:
+    - type: bind
+      source: /srv/sistemas/slc/data/storage/app
+      target: /var/www/html/storage/app
+    - type: bind
+      source: /srv/sistemas/slc/data/storage/app/public
+      target: /var/www/html/public/storage
 
 services:
 
@@ -50,6 +62,11 @@ services:
     image: nginx:1.25-alpine
     networks:
       - traefik-public
+    volumes:
+      - type: bind
+        source: /srv/sistemas/slc/data/frontend/dist
+        target: /usr/share/nginx/html
+        read_only: true
     deploy:
       replicas: 2
       labels:
@@ -58,21 +75,23 @@ services:
         - "traefik.http.routers.slc-front.rule=Host(`sousalimaconsultoria.com.br`) || Host(`www.sousalimaconsultoria.com.br`)"
         - "traefik.http.routers.slc-front.entrypoints=websecure"
         - "traefik.http.routers.slc-front.tls=true"
-        - "traefik.http.routers.slc-front.tls.certresolver=le" # Ajustado para 'le'
+        - "traefik.http.routers.slc-front.tls.certresolver=le"
         - "traefik.http.services.slc-front.loadbalancer.server.port=80"
-        # Headers de Segurança
         - "traefik.http.routers.slc-front.middlewares=slc-headers"
         - "traefik.http.middlewares.slc-headers.headers.stsSeconds=31536000"
         - "traefik.http.middlewares.slc-headers.headers.forceSTSHeader=true"
         - "traefik.http.middlewares.slc-headers.headers.frameDeny=true"
 
-  # ─── STATIC ASSETS ──────────────────────────────────
+  # ─── STATIC ASSETS (mesmo diretório que storage/app/public no Laravel) ─────
   static:
     image: nginx:1.25-alpine
     networks:
       - traefik-public
     volumes:
-      - app_public_storage:/usr/share/nginx/html/storage:ro
+      - type: bind
+        source: /srv/sistemas/slc/data/storage/app/public
+        target: /usr/share/nginx/html/storage
+        read_only: true
     deploy:
       replicas: 2
       labels:
@@ -81,15 +100,12 @@ services:
         - "traefik.http.routers.slc-static.rule=Host(`static.sousalimaconsultoria.com.br`)"
         - "traefik.http.routers.slc-static.entrypoints=websecure"
         - "traefik.http.routers.slc-static.tls=true"
-        - "traefik.http.routers.slc-static.tls.certresolver=le" # Ajustado para 'le'
+        - "traefik.http.routers.slc-static.tls.certresolver=le"
         - "traefik.http.services.slc-static.loadbalancer.server.port=80"
 
   # ─── BACKEND API & ADMIN (LARAVEL) ──────────────────────────────
   app:
     <<: *app-defaults
-    volumes:
-      - app_storage:/var/www/html/storage/app
-      - app_public_storage:/var/www/html/public/storage
     deploy:
       replicas: 2
       labels:
@@ -98,7 +114,7 @@ services:
         - "traefik.http.routers.slc-api.rule=Host(`api.sousalimaconsultoria.com.br`)"
         - "traefik.http.routers.slc-api.entrypoints=websecure"
         - "traefik.http.routers.slc-api.tls=true"
-        - "traefik.http.routers.slc-api.tls.certresolver=le" # Ajustado para 'le'
+        - "traefik.http.routers.slc-api.tls.certresolver=le"
         - "traefik.http.services.slc-api.loadbalancer.server.port=80"
 
   # ─── WORKER (SEM EXPOSIÇÃO TRAEFIK) ──────────────────────────
@@ -107,7 +123,6 @@ services:
     command: php artisan queue:work --verbose --tries=3 --timeout=90
     deploy:
       replicas: 1
-      # No worker não precisamos de labels do Traefik, pois ele não recebe tráfego HTTP externas
 
 networks:
   traefik-public:
@@ -115,10 +130,6 @@ networks:
   internal:
     driver: overlay
     attachable: true
-
-volumes:
-  app_storage:
-  app_public_storage:
 
 secrets:
   slc_db_password:
