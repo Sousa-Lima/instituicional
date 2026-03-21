@@ -1,0 +1,13 @@
+{
+  "folders": [
+    {
+      "name": "slc",
+      "path": "."
+    },
+    {
+      "name": "igrejareformada",
+      "path": "../igrejareformada"
+    }
+  ],
+  "settings": {}
+}

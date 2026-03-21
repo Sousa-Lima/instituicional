@@ -48,7 +48,14 @@ sudo chown -R 70:70 /srv/sistemas/slc/data/postgres
 sudo chown -R 999:1000 /srv/sistemas/slc/data/redis
 ```
 
-(Confirmar UID do PHP na tua imagem; ajustar `www-data` se necessário.)
+**Laravel (`admin/` em bind mount):** na imagem `eolimabr/php8.4-sousalima-multitenant`, o PHP-FPM corre como **`www-data` = uid/gid 82** (Alpine). O `www-data` **do host** (ex.: uid 33) **não** coincide — use **uid numérico 82** nos caminhos que o contentor grava:
+
+```bash
+docker run --rm -v /srv/sistemas/slc/admin:/app alpine chown -R 82:82 /app/storage /app/bootstrap/cache
+docker run --rm -v /srv/sistemas/slc/data/storage/app:/app alpine chown -R 82:82 /app
+```
+
+Repetir após `composer` ou `php artisan` corridos como **root** no host. Sem isto, é comum **500** e **não** aparecer `storage/logs/laravel.log`.
 
 ---
 
@@ -80,6 +87,14 @@ Gere a chave no **ambiente de desenvolvimento** (ou num contentor temporário co
 
 ```bash
 php artisan key:generate --show
+```
+
+Sem PHP local, usar o mesmo projeto montado num contentor (imagem PHP do stack ou `php:8.4-cli`):
+
+```bash
+docker run --rm -v /srv/sistemas/slc/admin:/var/www/html -w /var/www/html \
+  eolimabr/php8.4-sousalima-multitenant:latest \
+  php artisan key:generate --show
 ```
 
 O comando imprime uma linha no formato `base64:...`. **Sem** nova linha no final, crie o secret no nó Swarm (manager):
@@ -147,8 +162,10 @@ Verificar:
 
 ```bash
 docker stack services slc
-docker service ps slc_app --no-trunc
+docker service ps slc_app slc_api_nginx --no-trunc
 ```
+
+**HTTP:** a imagem PHP é só **FPM** (`:9000`). O Traefik aponta para **`slc_api_nginx`** (`:80`), que faz FastCGI para **`slc_app:9000`** — ver `nginx/laravel-api.conf` no repositório.
 
 ---
 
@@ -211,8 +228,9 @@ Ou manter os mesmos nomes e usar o truque de **remover o serviço da stack**, at
 docker stack services slc
 docker stack ps slc
 
-# Logs
+# Logs (Laravel com LOG_CHANNEL=stderr no YAML → erros no slc_app)
 docker service logs slc_app -f --tail 100
+docker service logs slc_api_nginx -f --tail 50
 docker service logs slc_queue -f --tail 50
 
 # Remover a stack (cuidado — para o serviço)

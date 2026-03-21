@@ -5,6 +5,13 @@
 # Código Laravel: por defeito o bind de admin/ → /var/www/html (desenvolvimento até a app
 # estar testada; depois remover esse mount e publicar o código na imagem PHP).
 #
+# Permissões PHP-FPM (imagem Alpine): www-data = uid/gid 82. Sem isto não há laravel.log e dá 500:
+#   docker run --rm -v /srv/sistemas/slc/admin:/app alpine chown -R 82:82 /app/storage /app/bootstrap/cache
+#   docker run --rm -v /srv/sistemas/slc/data/storage/app:/app alpine chown -R 82:82 /app
+#
+# HTTP: a imagem PHP é só PHP-FPM (:9000). O Traefik aponta para o serviço `api_nginx` (:80),
+# que faz FastCGI para `slc_app:9000` (ver deploy/nginx/laravel-api.conf).
+#
 # Dados persistentes no HOST (bind mounts), não em volumes Docker nomeados.
 # Criar no servidor (antes do primeiro deploy):
 #   mkdir -p /srv/sistemas/slc/data/storage/app/public \
@@ -36,10 +43,12 @@ x-app-defaults: &app-defaults
   working_dir: /var/www/html
   networks:
     - internal
-    - traefik-public
   environment:
     APP_ENV: production
     APP_DEBUG: "false"
+    # Erros também no stderr (docker service logs slc_app / slc_api_nginx)
+    LOG_CHANNEL: stderr
+    LOG_LEVEL: error
     # Fuso igual ao servidor (ajuste se necessário; no host: timedatectl)
     TZ: America/Sao_Paulo
     APP_TIMEZONE: America/Sao_Paulo
@@ -54,6 +63,8 @@ x-app-defaults: &app-defaults
     DB_PASSWORD_FILE: /run/secrets/slc_sousalima_db_password
     APP_KEY_FILE: /run/secrets/slc_sousalima_app_key
     JWT_SECRET_FILE: /run/secrets/slc_sousalima_jwt_secret
+    # predis (PHP puro) — a imagem pode não ter extensão phpredis
+    REDIS_CLIENT: predis
     REDIS_HOST: redis
     CACHE_STORE: redis
     SESSION_DRIVER: redis
@@ -218,10 +229,33 @@ services:
         - "traefik.http.routers.slc-static.tls.certresolver=le"
         - "traefik.http.services.slc-static.loadbalancer.server.port=80"
 
-  # ─── BACKEND API & ADMIN (LARAVEL) ──────────────────────────────
+  # ─── BACKEND API (PHP-FPM — sem HTTP; Traefik → api_nginx) ────────────────
   app:
     <<: *app-defaults
     healthcheck: *healthcheck-php
+    deploy:
+      replicas: 1
+
+  # ─── Nginx → FastCGI para slc_app:9000 (HTTPS no Traefik) ─────────────────
+  api_nginx:
+    image: nginx:1.25-alpine
+    networks:
+      - internal
+      - traefik-public
+    volumes:
+      - type: bind
+        source: /srv/sistemas/slc/admin
+        target: /var/www/html
+        read_only: true
+      - type: bind
+        source: /srv/sistemas/slc/data/storage/app/public
+        target: /var/www/html/public/storage
+        read_only: true
+      - type: bind
+        source: /srv/sistemas/slc/deploy/nginx/laravel-api.conf
+        target: /etc/nginx/conf.d/default.conf
+        read_only: true
+    healthcheck: *healthcheck-nginx
     deploy:
       replicas: 1
       labels:
