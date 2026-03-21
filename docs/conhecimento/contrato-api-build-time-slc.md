@@ -6,6 +6,20 @@ Proposta técnica alinhada ao [stack-tecnico-slc.md](../definicoes/stack-tecnico
 
 ---
 
+## Prioridade: definir o contrato de API primeiro
+
+Com **Astro em SSG**, o build precisa da **estrutura exata** dos dados para gerar HTML estático sem surpresas. A melhor prática é **fixar o contrato** (OpenAPI ou interfaces TypeScript compartilhadas na prática) **antes** de fechar todas as telas.
+
+| Frente | Benefício |
+|--------|-----------|
+| **Frontend (Astro)** | Componentes com **mocks** que seguem o contrato; depois, troca por `fetch` no build sem redesenhar o modelo mental. |
+| **Backend (Laravel + Inertia)** | Formulários do painel (**Novo case**, etc.) com **campos alinhados** ao que o site consome. |
+| **CI/CD + webhook** | Validação de **campos obrigatórios** antes de publicar; reduz build quebrando no Swarm por dado incompleto. |
+
+O desenvolvimento pode ser **paralelo**, mas o **contrato é a âncora** comum.
+
+---
+
 ## 1. Endpoints de build-time (descoberta de caminhos)
 
 Para o Astro gerar rotas estáticas (**SSG**), o build precisa saber **quais URLs existem**.
@@ -17,7 +31,7 @@ Para o Astro gerar rotas estáticas (**SSG**), o build precisa saber **quais URL
 | **Resposta** | Lista **enxuta**: idealmente apenas **`slug`**, **`updated_at`** (ISO 8601) e identificador do **tipo** de recurso (ex.: `kind: "service" | "case" | "post"`), para cache e invalidação. |
 | **Boas práticas** | Endpoint **leve** (sem corpo pesado); paginação se a lista crescer muito. |
 
-O Astro usa esse retorno em `getStaticPaths` (ou equivalente) para gerar uma página por slug.
+O Astro usa esse retorno em `getStaticPaths` (ou equivalente) para gerar uma página por slug. Para **cases**, os slugs também podem ser derivados de `GET /api/v1/cases` (apenas itens `published`) — ver abaixo.
 
 ---
 
@@ -25,7 +39,7 @@ O Astro usa esse retorno em `getStaticPaths` (ou equivalente) para gerar uma pá
 
 O frontend (**Astro**, TypeScript **`strict`**) deve espelhar o contrato da API para o build **falhar cedo** se faltar campo obrigatório.
 
-### Exemplo: serviços (referência Sagitta / Venturus — cards + página interna)
+### 2.1 Serviços (referência Sagitta / Venturus — cards + página interna)
 
 ```typescript
 /** Contrato de API — entidade Serviço (exemplo) */
@@ -46,7 +60,60 @@ interface ServiceContract {
 }
 ```
 
-Estender o mesmo rigor a **cases** e **posts** com interfaces dedicadas (`CaseContract`, `PostContract`, etc.).
+### 2.2 Cases (portfólio — performance + SEO)
+
+| Item | Definição |
+|------|-----------|
+| **Endpoint** | `GET /api/v1/cases` |
+| **Uso** | Lista completa para a **galeria** (`/cases`), geração de **`getStaticPaths`** (slugs) e páginas internas (`/cases/[slug]`). |
+| **Filtro no build** | Incluir apenas registros `status: "published"` (ou endpoint dedicado `/api/v1/cases?status=published` conforme política da API). |
+
+**Interface alinhada às diretrizes SLC** (métricas obrigatórias; imagens com dimensões para **LCP** e **CLS**):
+
+```typescript
+/** Contrato de API — Case study (portfólio) */
+interface CaseStudy {
+  id: string;
+  slug: string; // ex.: "otimizacao-infraestrutura-cloud"
+  status: 'published' | 'draft';
+  featured: boolean; // destaque na Home
+
+  // Conteúdo principal
+  title: string;
+  customer_name: string;
+  sector: string; // ex.: "Logística", "Fintech"
+  short_summary: string; // card da listagem
+  content_html: string; // corpo rico: problema, solução, resultado
+
+  // Métricas (diretrizes de autoridade / resultados)
+  metrics: {
+    label: string; // ex.: "Redução de custos"
+    value: string; // ex.: "35%"
+  }[];
+
+  // Performance e imagens (LCP / CLS)
+  main_image: {
+    url: string;
+    alt: string;
+    width: number;
+    height: number;
+  };
+
+  // SEO
+  seo: {
+    meta_title: string;
+    meta_description: string;
+    og_image: string;
+    keywords: string[];
+  };
+}
+```
+
+**Fixture JSON de exemplo** (case “Enterprise”, dados fictícios, para testes de layout no Astro): [exemplo-fixture-case-enterprise-slc.md](exemplo-fixture-case-enterprise-slc.md).
+
+### 2.3 Posts (blog / insights)
+
+Definir interface `PostContract` no mesmo padrão (slug, `content_html`, `seo`, mídia com dimensões) quando o blog entrar no build.
 
 ---
 
@@ -96,7 +163,7 @@ O site é **estático**: após alterar conteúdo no **admin**, é preciso **novo
 - **`secret`:** valor conhecido só pelo admin e pelo pipeline (armazenado como **secret** no CI). Validar com comparação **timing-safe**; preferir **HTTPS** apenas.
 - Alternativa: assinatura **HMAC** no header em evoluções futuras.
 
-Rebuild completo é aceitável no início; otimizações (build parcial) podem vir depois.
+Rebuild completo é aceitável no início; otimizações (build parcial) podem vir depois. Exemplo de `model` no payload: `"Service"`, `"Case"`, `"Post"`, conforme o recurso publicado.
 
 ---
 
@@ -108,7 +175,7 @@ Rebuild completo é aceitável no início; otimizações (build parcial) podem v
 |------|-----------|
 | **Método** | Header **`Authorization: Bearer <token>`** com token de **leitura** só para o pipeline de build. |
 | **Config** | Variável **`API_READ_TOKEN`** (ou nome equivalente) **no CI do frontend**, nunca commitada. |
-| **Escopo** | Token apenas para endpoints necessários ao SSG (`/api/v1/content/...`). |
+| **Escopo** | Token apenas para endpoints necessários ao SSG (ex.: `/api/v1/content/...`, `/api/v1/cases`, `/api/v1/...`). |
 
 ### Sanitização de HTML
 
