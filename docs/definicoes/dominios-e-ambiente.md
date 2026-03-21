@@ -31,6 +31,7 @@ Sem amarrar a um framework específico, a aplicação web costuma precisar de:
 | Sessão e cache | Onde guardar sessão e cache em produção. |
 | E-mail | SMTP ou provedor transacional, remetente padrão. |
 | Multitenancy (se houver) | Domínio base para subdomínios de cliente e hosts extras para páginas centrais. |
+| Build SSG (CI do **frontend**) | URL base da API do admin, **`API_READ_TOKEN`** (Bearer, leitura só para build), segredos do webhook de rebuild — ver [contrato-api-build-time-slc.md](../conhecimento/contrato-api-build-time-slc.md). |
 
 Documente os nomes exatos das variáveis em **cada** repositório (frontend e admin) quando estiverem definidos.
 

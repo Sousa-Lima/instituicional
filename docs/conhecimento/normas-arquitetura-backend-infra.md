@@ -20,6 +20,7 @@ Conteúdo vindo do **Laravel** para site **Astro SSG**: a API é usada **no buil
 | **Formatos** | **WebP** e **AVIF** como preferência; JPEG/PNG quando necessário para compatibilidade. |
 | **Responsivo** | **`srcset`** e **`sizes`** (ou serviço de resize/ CDN) para dimensionamento **dinâmico** por viewport e DPR. |
 | **Ligação com LCP** | O elemento LCP costuma ser imagem; priorizar o recurso crítico (tamanho, formato, prioridade de carregamento). Ver [qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md). |
+| **API → Astro (build)** | Contrato de conteúdo deve expor **dimensões** (`width` / `height`) junto à URL da imagem para reservar espaço e reduzir CLS — ver [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md). |
 
 ## 3. Scripts de terceiros (sandboxing e performance)
 

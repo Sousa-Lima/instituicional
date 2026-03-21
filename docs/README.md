@@ -19,6 +19,7 @@ Base de documentação interna para evoluir até a publicação do site e dos se
 | [definicoes/dominios-e-ambiente.md](definicoes/dominios-e-ambiente.md) | Marca, domínio, ambientes e variáveis de ambiente em nível conceitual. |
 | [definicoes/stack-tecnico-slc.md](definicoes/stack-tecnico-slc.md) | Dois repos: frontend (Astro + Tailwind) e admin (Laravel + Inertia + React). |
 | [conhecimento/integracao-astro-ssg-laravel.md](conhecimento/integracao-astro-ssg-laravel.md) | SSG: API só no build; webhook/rebuild; risco de conteúdo defasado. |
+| [conhecimento/contrato-api-build-time-slc.md](conhecimento/contrato-api-build-time-slc.md) | Slugs, contratos TS, imagens LCP/CLS, webhook, Bearer, CSP/sanitização. |
 | [definicoes/conteudo-juridico-semente.md](definicoes/conteudo-juridico-semente.md) | Conteúdo/jurídico: referência inicial e políticas. |
 | [definicoes/compliance-ferramentas.md](definicoes/compliance-ferramentas.md) | LGPD: cookies, analytics, documentos legais. |
 | [definicoes/paleta-cores.md](definicoes/paleta-cores.md) | Base de cores do logo SLC, tokens e variáveis CSS para site/sistema. |

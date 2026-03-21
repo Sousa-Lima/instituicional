@@ -4,7 +4,7 @@
 
 **Arquitetura de código:** **dois repositórios** — frontend (este escopo: **Astro**) e **admin** (**Laravel** + Inertia + React); não monorepo — ver [stack-tecnico-slc.md](../definicoes/stack-tecnico-slc.md). Este documento foca no **site (frontend)** e na **API do admin** consumida no **build**; **área do cliente** é **posterior**.
 
-Documentos relacionados: [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md), [referencia-layout-sites.md](referencia-layout-sites.md), [conteudo-mensagens-referencia.md](conteudo-mensagens-referencia.md), [qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md), [diretrizes-qualidade-site-slc.md](../definicoes/diretrizes-qualidade-site-slc.md), [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md), [paleta-cores.md](../definicoes/paleta-cores.md), [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md).
+Documentos relacionados: [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md), [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md), [referencia-layout-sites.md](referencia-layout-sites.md), [conteudo-mensagens-referencia.md](conteudo-mensagens-referencia.md), [qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md), [diretrizes-qualidade-site-slc.md](../definicoes/diretrizes-qualidade-site-slc.md), [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md), [paleta-cores.md](../definicoes/paleta-cores.md), [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md).
 
 ---
 
@@ -36,11 +36,11 @@ Alinhado a [qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vital
 
 | Tópico | Diretriz |
 |--------|----------|
-| **API — conteúdo institucional** | Blog, serviços e páginas estáticas: dados obtidos com **`fetch` no frontmatter** (ou camada de dados) **no build** (SSG), gerando HTML estático. |
-| **Atualização após mudanças no CMS** | Definir **webhook** (ou CI disparado pelo Laravel) para **novo build + deploy**; senão o HTML fica defasado em relação ao banco — ver [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md). |
+| **API — conteúdo institucional** | Blog, serviços e páginas estáticas: dados obtidos com **`fetch` no frontmatter** **no build** (SSG); descoberta de rotas (`/api/v1/content/slugs`), contratos TS, imagens com dimensões, Bearer de leitura — ver [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md). |
+| **Atualização após mudanças no CMS** | **Job** + **webhook** de publicação para o CI do frontend — [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md), [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md). |
 | **Auth — área do cliente** | **Fora do escopo imediato**; quando existir, JWT/cookies HttpOnly conforme [stack-tecnico-slc.md](../definicoes/stack-tecnico-slc.md). |
 | **Dados no cliente** | Onde houver ilhas React no Astro, **TanStack Query** pode gerenciar cache e chamadas à API; no **repo admin (Laravel)**, o fluxo padrão é **Inertia + React** (sem Next.js). |
-| **Segurança** | Cookies **HttpOnly** / **Secure** / **SameSite** quando houver sessão ou token; CSP e demais cabeçalhos em [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md). |
+| **Segurança** | Build: **Bearer** `API_READ_TOKEN` para API de conteúdo; sanitização de HTML no Laravel; CSP — [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md), [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md). Cookies **HttpOnly** quando houver sessão no admin. |
 
 ---
 

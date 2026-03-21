@@ -33,6 +33,8 @@ Cada repositório tem **próprio CI/CD**, versionamento e deploy. A comunicaçã
 
 **Tailwind** unifica estilo entre Astro e o front Inertia/React, alinhado à [paleta de cores](paleta-cores.md).
 
+Contrato HTTP entre frontend e admin no build: [contrato-api-build-time-slc.md](../conhecimento/contrato-api-build-time-slc.md).
+
 ## Área do cliente
 
 **Fora do escopo imediato** do site institucional; evolui na stack Laravel + Inertia + React quando priorizado.

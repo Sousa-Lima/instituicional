@@ -63,7 +63,7 @@ Atualizado conforme decisões de produto e stack. Referências: [stack-tecnico-s
 
 - [ ] **Repositório frontend (site):** Astro + Tailwind; CI próprio (build, artefato estático).
 - [ ] **Repositório admin:** Laravel + Inertia + React; API e painel; CI próprio (testes, deploy).
-- [ ] **Contrato de API** entre os dois projetos para dados do **build** do Astro (tipos TS + versão estável; URL base da API em variável de ambiente do CI do frontend).
+- [ ] **Contrato de API** implementado conforme [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md) (slugs, interfaces TS, imagens com `width`/`height`, `API_READ_TOKEN`, payload do webhook).
 - [ ] **Webhook / dispatch** do admin para acionar **pipeline do frontend** quando conteúdo mudar ([integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md)).
 - [ ] **Otimização de assets:** uso do **`<Image />` do Astro** para logo e imagens (WebP/AVIF, dimensões) — metas PSI ([projeto-astro-laravel-institutional.md](projeto-astro-laravel-institutional.md)).
 - [ ] Implementação e testes de performance (PSI).

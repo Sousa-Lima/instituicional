@@ -21,12 +21,10 @@ Se o conteúdo institucional (blog, serviços, cases) for gerido no **Laravel** 
 
 ## Contrato de API (build time)
 
-Mesmo com webhook, continua necessário um **contrato estável** (formato JSON, versionamento ou campos obrigatórios) para o script de build do Astro falhar de forma previsível quando o CMS mudar.
-
-Com **dois repositórios**, o contrato é a **interface pública da API** (documentada ou OpenAPI); tipos TS no frontend podem ser gerados a partir do schema ou mantidos alinhados por revisão em cada release.
+Detalhes normativos: endpoints (`GET /api/v1/content/slugs`), interfaces TypeScript, imagens (width/height), webhook de publicação, **Bearer** no build e sanitização — ver **[contrato-api-build-time-slc.md](contrato-api-build-time-slc.md)**.
 
 ## Resumo
 
 - **SSG** = API no **build**, não no browser para conteúdo pré-renderizado.
 - **Webhook (ou equivalente)** é a forma típica de não deixar o site “congelado” em relação ao Laravel.
-- Ver também [planejamento-e-faltantes-site-institucional.md](planejamento-e-faltantes-site-institucional.md) e [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md).
+- Ver também [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md), [planejamento-e-faltantes-site-institucional.md](planejamento-e-faltantes-site-institucional.md) e [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md).
