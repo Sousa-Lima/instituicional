@@ -1,0 +1,45 @@
+---
+interface Props {
+	currentPath?: string;
+}
+
+const { currentPath = '/' } = Astro.props;
+
+function navClass(prefix: string): string {
+	const active =
+		prefix === '/'
+			? currentPath === '/'
+			: currentPath === prefix || currentPath.startsWith(`${prefix}/`);
+	return active ? 'text-slc-navy' : 'text-slc-text-muted hover:text-slc-navy';
+}
+---
+
+<header class="border-b border-slc-grey/20 bg-slc-surface/80 backdrop-blur-sm">
+	<div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 md:py-4">
+		<a
+			href="/"
+			class="flex shrink-0 items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slc-navy"
+		>
+			<picture>
+				<source
+					srcset="/sousa-lima-consultoria-logo-horizontal-colorido.webp"
+					type="image/webp"
+				/>
+				<img
+					src="/sousa-lima-consultoria-logo-horizontal-colorido.png"
+					alt="Sousa Lima Consultoria"
+					class="h-8 w-auto max-w-[min(100%,260px)] object-contain object-left md:h-10"
+					width="1000"
+					height="334"
+					loading="eager"
+					decoding="async"
+				/>
+			</picture>
+		</a>
+		<nav class="flex flex-wrap gap-4 text-sm font-medium md:gap-6">
+			<a href="/servicos" class={`transition ${navClass('/servicos')}`}>Serviços</a>
+			<a href="/cases" class={`transition ${navClass('/cases')}`}>Cases</a>
+			<a href="/contato" class={`transition ${navClass('/contato')}`}>Contato</a>
+		</nav>
+	</div>
+</header>

@@ -1,0 +1,231 @@
+---
+/**
+ * Banner LGPD: categorias, registo em localStorage, evento `slc-consent-update`
+ * para futuros scripts (ex. GA4 com Consent Mode).
+ * Ver docs/definicoes/compliance-ferramentas.md
+ */
+---
+
+<div
+	id="slc-cookie-root"
+	class="pointer-events-none fixed inset-x-0 bottom-0 z-[100] flex justify-center p-4 md:p-6"
+	aria-hidden="true"
+>
+	<div
+		id="slc-cookie-banner"
+		class="pointer-events-auto hidden max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-slc-grey/20 bg-white p-5 shadow-2xl shadow-slc-navy/15 md:p-6"
+		role="dialog"
+		aria-modal="true"
+		aria-labelledby="slc-cookie-title"
+		aria-describedby="slc-cookie-desc"
+		tabindex="-1"
+	>
+		<h2 id="slc-cookie-title" class="font-display text-lg font-semibold text-slc-navy">
+			Cookies e privacidade
+		</h2>
+		<p id="slc-cookie-desc" class="mt-3 text-sm leading-relaxed text-slc-text-muted">
+			Utilizamos cookies e armazenamento local estritamente necessários ao funcionamento do site e, com o seu
+			consentimento, para medir audiência e memorizar preferências. Consulte a{' '}
+			<a href="/politica-privacidade" class="font-medium text-slc-purple underline hover:text-slc-navy">
+				política de privacidade
+			</a>{' '}
+			e a{' '}
+			<a href="/cookies" class="font-medium text-slc-purple underline hover:text-slc-navy">política de cookies</a>.
+		</p>
+
+		<div id="slc-cookie-details" class="mt-5 hidden space-y-4 border-t border-slc-grey/15 pt-5">
+			<p class="text-xs font-semibold uppercase tracking-wider text-slc-grey">Categorias</p>
+			<label class="flex cursor-not-allowed items-start gap-3">
+				<input type="checkbox" checked disabled class="mt-1 size-4 rounded border-slc-grey/40" />
+				<span class="text-sm text-slc-text">
+					<strong class="text-slc-navy">Estritamente necessários</strong> — segurança, carga de página e
+					memorização desta decisão de consentimento. Não podem ser desativados.
+				</span>
+			</label>
+			<label class="flex cursor-pointer items-start gap-3">
+				<input id="slc-opt-preferences" type="checkbox" class="mt-1 size-4 rounded border-slc-grey/40 text-slc-purple focus:ring-slc-purple" />
+				<span class="text-sm text-slc-text">
+					<strong class="text-slc-navy">Preferências</strong> — memorizar definições da sua visita quando aplicável.
+				</span>
+			</label>
+			<label class="flex cursor-pointer items-start gap-3">
+				<input id="slc-opt-analytics" type="checkbox" class="mt-1 size-4 rounded border-slc-grey/40 text-slc-purple focus:ring-slc-purple" />
+				<span class="text-sm text-slc-text">
+					<strong class="text-slc-navy">Análise / estatísticas</strong> — compreender como o site é utilizado (ex.
+					ferramentas de medição, apenas após o seu acordo).
+				</span>
+			</label>
+		</div>
+
+		<div class="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
+			<button
+				type="button"
+				id="slc-cookie-necessary"
+				class="order-3 min-h-11 rounded-lg border border-slc-grey/25 px-4 py-2.5 text-sm font-medium text-slc-navy transition hover:bg-slc-bg sm:order-1"
+			>
+				Apenas necessários
+			</button>
+			<button
+				type="button"
+				id="slc-cookie-customize"
+				class="order-2 min-h-11 rounded-lg border border-slc-navy/20 px-4 py-2.5 text-sm font-medium text-slc-navy transition hover:border-slc-magenta/40 sm:order-2"
+			>
+				Definir preferências
+			</button>
+			<button
+				type="button"
+				id="slc-cookie-accept"
+				class="order-1 min-h-11 rounded-lg bg-slc-navy px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-slc-indigo sm:order-3"
+			>
+				Aceitar todos
+			</button>
+			<button
+				type="button"
+				id="slc-cookie-save"
+				class="hidden min-h-11 rounded-lg bg-slc-navy px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-slc-indigo"
+			>
+				Guardar preferências
+			</button>
+		</div>
+	</div>
+</div>
+
+<script is:inline>
+	(function () {
+		var STORAGE_KEY = 'slc_consent_v1';
+		var CONSENT_VERSION = 1;
+
+		function readConsent() {
+			try {
+				var raw = localStorage.getItem(STORAGE_KEY);
+				if (!raw) return null;
+				return JSON.parse(raw);
+			} catch (e) {
+				return null;
+			}
+		}
+
+		function writeConsent(data) {
+			var payload = {
+				v: CONSENT_VERSION,
+				necessary: true,
+				preferences: !!data.preferences,
+				analytics: !!data.analytics,
+				marketing: !!data.marketing,
+				ts: new Date().toISOString(),
+			};
+			try {
+				localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+			} catch (e) {}
+			dispatchConsent(payload);
+			hideBanner();
+		}
+
+		function dispatchConsent(payload) {
+			try {
+				window.dispatchEvent(new CustomEvent('slc-consent-update', { detail: payload }));
+			} catch (e) {}
+			if (typeof window.slcOnConsentUpdate === 'function') {
+				try {
+					window.slcOnConsentUpdate(payload);
+				} catch (e) {}
+			}
+		}
+
+		var root = document.getElementById('slc-cookie-root');
+		var banner = document.getElementById('slc-cookie-banner');
+		var details = document.getElementById('slc-cookie-details');
+		var btnAccept = document.getElementById('slc-cookie-accept');
+		var btnNecessary = document.getElementById('slc-cookie-necessary');
+		var btnCustomize = document.getElementById('slc-cookie-customize');
+		var btnSave = document.getElementById('slc-cookie-save');
+		var optPref = document.getElementById('slc-opt-preferences');
+		var optAnalytics = document.getElementById('slc-opt-analytics');
+
+		function showBanner() {
+			if (!banner || !root) return;
+			root.setAttribute('aria-hidden', 'false');
+			banner.classList.remove('hidden');
+			banner.focus();
+		}
+
+		function hideBanner() {
+			if (!banner || !root) return;
+			banner.classList.add('hidden');
+			root.setAttribute('aria-hidden', 'true');
+		}
+
+		function openCustomize() {
+			if (!details || !btnSave) return;
+			details.classList.remove('hidden');
+			btnSave.classList.remove('hidden');
+			var existing = readConsent();
+			if (optPref) optPref.checked = existing ? !!existing.preferences : false;
+			if (optAnalytics) optAnalytics.checked = existing ? !!existing.analytics : false;
+		}
+
+		function bindFooterManage() {
+			var m = document.getElementById('slc-cookie-manage');
+			if (!m) return;
+			m.addEventListener('click', function (e) {
+				e.preventDefault();
+				window.slcOpenCookiePreferences();
+			});
+		}
+
+		function init() {
+			var existing = readConsent();
+			if (existing && existing.v === CONSENT_VERSION) {
+				dispatchConsent(existing);
+				return;
+			}
+			showBanner();
+		}
+
+		if (btnAccept) {
+			btnAccept.addEventListener('click', function () {
+				writeConsent({ preferences: true, analytics: true, marketing: false });
+			});
+		}
+		if (btnNecessary) {
+			btnNecessary.addEventListener('click', function () {
+				writeConsent({ preferences: false, analytics: false, marketing: false });
+			});
+		}
+		if (btnCustomize) {
+			btnCustomize.addEventListener('click', function () {
+				openCustomize();
+			});
+		}
+		if (btnSave) {
+			btnSave.addEventListener('click', function () {
+				writeConsent({
+					preferences: optPref ? optPref.checked : false,
+					analytics: optAnalytics ? optAnalytics.checked : false,
+					marketing: false,
+				});
+			});
+		}
+
+		window.slcOpenCookiePreferences = function () {
+			var existing = readConsent();
+			showBanner();
+			openCustomize();
+			if (existing) {
+				if (optPref) optPref.checked = !!existing.preferences;
+				if (optAnalytics) optAnalytics.checked = !!existing.analytics;
+			}
+		};
+
+		function boot() {
+			init();
+			bindFooterManage();
+		}
+
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', boot);
+		} else {
+			boot();
+		}
+	})();
+</script>

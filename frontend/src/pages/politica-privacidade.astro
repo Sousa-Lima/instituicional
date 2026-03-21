@@ -1,0 +1,81 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+---
+
+<BaseLayout
+	title="Política de privacidade — Sousa Lima Consultoria"
+	description="Informações sobre tratamento de dados pessoais, bases legais e direitos do titular (LGPD)."
+>
+	<SiteHeader currentPath={Astro.url.pathname} />
+	<main id="conteudo-principal" tabindex="-1" class="flex flex-1 flex-col px-4 py-16">
+		<div class="mx-auto w-full max-w-3xl">
+			<h1 class="font-display text-4xl font-bold text-slc-navy">Política de privacidade</h1>
+			<p class="mt-4 text-sm text-slc-text-muted">
+				Este texto é um <strong class="text-slc-text">modelo operacional</strong> — deve ser revisto e adaptado por
+				profissional habilitado (advogado ou DPO) antes de publicação definitiva.
+			</p>
+
+			<section class="mt-10 space-y-4 text-slc-text">
+				<h2 class="font-display text-xl font-semibold text-slc-navy">1. Responsável pelo tratamento</h2>
+				<p class="leading-relaxed text-slc-text-muted">
+					<strong class="text-slc-text">Sousa Lima Consultoria</strong> — inserir dados de identificação (razão
+					social, CNPJ, endereço e contacto) conforme registo empresarial atual.
+				</p>
+			</section>
+
+			<section class="mt-10 space-y-4 text-slc-text">
+				<h2 class="font-display text-xl font-semibold text-slc-navy">2. Dados tratados neste site</h2>
+				<p class="leading-relaxed text-slc-text-muted">
+					Consoante a sua interação: dados enviados em formulários (nome, e-mail, empresa, etc.), registos técnicos
+					usuais de operação do site e, mediante consentimento, dados recolhidos por cookies ou tecnologias
+					similares descritos na{' '}
+					<a href="/cookies" class="font-medium text-slc-purple underline hover:text-slc-navy">
+						política de cookies
+					</a>
+					.
+				</p>
+			</section>
+
+			<section class="mt-10 space-y-4 text-slc-text">
+				<h2 class="font-display text-xl font-semibold text-slc-navy">3. Finalidades e bases legais (LGPD)</h2>
+				<p class="leading-relaxed text-slc-text-muted">
+					Exemplos: resposta a pedidos de contacto (execução de medidas precontratuais ou contratuais, ou
+					consentimento quando aplicável); cumprimento de obrigações legais; interesses legítimos quando
+					fundamentados e com balanceamento adequado. Detalhar por finalidade após revisão jurídica.
+				</p>
+			</section>
+
+			<section class="mt-10 space-y-4 text-slc-text">
+				<h2 class="font-display text-xl font-semibold text-slc-navy">4. Direitos do titular (art. 18 da LGPD)</h2>
+				<p class="leading-relaxed text-slc-text-muted">
+					Pode solicitar confirmação de tratamento, acesso, correção, anonimização, portabilidade, eliminação de
+					dados desnecessários, informação sobre partilhas e revogação do consentimento quando a base for o
+					consentimento. Indicar canal de pedido (e-mail dedicado ou formulário) após definição interna.
+				</p>
+			</section>
+
+			<section class="mt-10 space-y-4 text-slc-text">
+				<h2 class="font-display text-xl font-semibold text-slc-navy">5. Cookies e consentimento</h2>
+				<p class="leading-relaxed text-slc-text-muted">
+					A gestão de cookies e preferências está descrita na{' '}
+					<a href="/cookies" class="font-medium text-slc-purple underline hover:text-slc-navy">
+						política de cookies
+					</a>
+					. Pode alterar a sua escolha a qualquer momento através de
+					<strong class="text-slc-text">Gerir preferências de cookies</strong> no rodapé.
+				</p>
+			</section>
+
+			<section class="mt-10 space-y-4 text-slc-text">
+				<h2 class="font-display text-xl font-semibold text-slc-navy">6. Encarregado de proteção de dados (DPO)</h2>
+				<p class="leading-relaxed text-slc-text-muted">
+					Indicar se nomeado, com contacto, ou declarar que não há obrigatoriedade de nomeação nos termos da
+					legislação aplicável — conforme parecer jurídico.
+				</p>
+			</section>
+		</div>
+	</main>
+	<SiteFooter />
+</BaseLayout>

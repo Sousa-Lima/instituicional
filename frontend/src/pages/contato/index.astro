@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+import LeadContactForm from '../../components/LeadContactForm.astro';
+---
+
+<BaseLayout
+	title="Contacto — Sousa Lima Consultoria"
+	description="Envie uma mensagem ou agende um diagnóstico. Respondemos com objetividade."
+>
+	<SiteHeader currentPath={Astro.url.pathname} />
+	<main id="conteudo-principal" tabindex="-1" class="flex flex-1 flex-col px-4 py-16">
+		<div class="mx-auto w-full max-w-2xl">
+			<h1 class="font-display text-4xl font-bold text-slc-navy">Contacto</h1>
+			<p class="mt-4 text-slc-text-muted">
+				Preencha o formulário. Os dados são tratados segundo a nossa política de privacidade e a legislação
+				aplicável (LGPD).
+			</p>
+			<div class="mt-10">
+				<LeadContactForm />
+			</div>
+		</div>
+	</main>
+	<SiteFooter />
+</BaseLayout>

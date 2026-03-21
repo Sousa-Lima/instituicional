@@ -1,0 +1,239 @@
+---
+import { apiUrl, getApiBaseUrl } from '../lib/api';
+
+const endpoint = apiUrl('/api/v1/lead/contact');
+const hasEndpoint = getApiBaseUrl().length > 0;
+---
+
+<div class="rounded-xl border border-slc-grey/20 bg-white p-6 shadow-sm md:p-8">
+	{!hasEndpoint && (
+		<p class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+			Configure <code class="font-mono text-xs">PUBLIC_API_BASE_URL</code> no <code class="font-mono text-xs">.env</code> para
+			enviar o formulário.
+		</p>
+	)}
+
+	<form
+		id="lead-contact-form"
+		class="space-y-5"
+		data-endpoint={hasEndpoint ? endpoint : ''}
+		data-disabled={!hasEndpoint ? '1' : undefined}
+	>
+		<div class="grid gap-4 md:grid-cols-2">
+			<div>
+				<label for="lc-name" class="mb-1 block text-sm font-medium text-slc-navy">Nome *</label>
+				<input
+					id="lc-name"
+					name="name"
+					type="text"
+					required
+					maxlength="255"
+					autocomplete="name"
+					class="w-full rounded-lg border border-slc-grey/25 px-3 py-2 text-slc-text outline-none ring-slc-purple/30 transition focus:border-slc-purple focus:ring-2"
+				/>
+			</div>
+			<div>
+				<label for="lc-email" class="mb-1 block text-sm font-medium text-slc-navy">E-mail *</label>
+				<input
+					id="lc-email"
+					name="email"
+					type="email"
+					required
+					maxlength="255"
+					autocomplete="email"
+					class="w-full rounded-lg border border-slc-grey/25 px-3 py-2 text-slc-text outline-none ring-slc-purple/30 transition focus:border-slc-purple focus:ring-2"
+				/>
+			</div>
+		</div>
+
+		<div class="grid gap-4 md:grid-cols-2">
+			<div>
+				<label for="lc-company" class="mb-1 block text-sm font-medium text-slc-navy">Empresa *</label>
+				<input
+					id="lc-company"
+					name="company"
+					type="text"
+					required
+					maxlength="255"
+					autocomplete="organization"
+					class="w-full rounded-lg border border-slc-grey/25 px-3 py-2 text-slc-text outline-none ring-slc-purple/30 transition focus:border-slc-purple focus:ring-2"
+				/>
+			</div>
+			<div>
+				<label for="lc-job" class="mb-1 block text-sm font-medium text-slc-navy">Cargo</label>
+				<input
+					id="lc-job"
+					name="job_title"
+					type="text"
+					maxlength="255"
+					autocomplete="organization-title"
+					class="w-full rounded-lg border border-slc-grey/25 px-3 py-2 text-slc-text outline-none ring-slc-purple/30 transition focus:border-slc-purple focus:ring-2"
+				/>
+			</div>
+		</div>
+
+		<div class="grid gap-4 md:grid-cols-2">
+			<div>
+				<label for="lc-interest" class="mb-1 block text-sm font-medium text-slc-navy">Interesse *</label>
+				<select
+					id="lc-interest"
+					name="interest"
+					required
+					class="w-full rounded-lg border border-slc-grey/25 bg-white px-3 py-2 text-slc-text outline-none ring-slc-purple/30 transition focus:border-slc-purple focus:ring-2"
+				>
+					<option value="">Selecione</option>
+					<option value="process">Processos</option>
+					<option value="software">Software</option>
+					<option value="cloud">Cloud</option>
+				</select>
+			</div>
+			<div>
+				<label for="lc-stage" class="mb-1 block text-sm font-medium text-slc-navy">Estágio do negócio</label>
+				<select
+					id="lc-stage"
+					name="business_stage"
+					class="w-full rounded-lg border border-slc-grey/25 bg-white px-3 py-2 text-slc-text outline-none ring-slc-purple/30 transition focus:border-slc-purple focus:ring-2"
+				>
+					<option value="">Opcional</option>
+					<option value="ideation">Ideação</option>
+					<option value="validation">Validação</option>
+					<option value="scale">Escala</option>
+					<option value="operations">Operações</option>
+				</select>
+			</div>
+		</div>
+
+		<div>
+			<label for="lc-message" class="mb-1 block text-sm font-medium text-slc-navy">Mensagem</label>
+			<textarea
+				id="lc-message"
+				name="message"
+				rows="4"
+				maxlength="10000"
+				class="w-full rounded-lg border border-slc-grey/25 px-3 py-2 text-slc-text outline-none ring-slc-purple/30 transition focus:border-slc-purple focus:ring-2"
+			></textarea>
+		</div>
+
+		<div class="flex items-start gap-3">
+			<input
+				id="lc-consent"
+				name="consent_lgpd"
+				type="checkbox"
+				value="1"
+				required
+				class="mt-1 size-4 rounded border-slc-grey/40 text-slc-purple focus:ring-slc-purple"
+			/>
+			<label for="lc-consent" class="text-sm text-slc-text-muted">
+				Declaro que li e aceito a{' '}
+				<a href="/politica-privacidade" class="font-medium text-slc-purple underline hover:text-slc-navy">
+					política de privacidade
+				</a>
+				. *
+			</label>
+		</div>
+
+		<p id="lead-form-status" class="hidden text-sm" role="status" aria-live="polite"></p>
+		<p id="lead-form-errors" class="hidden text-sm text-red-700" role="alert"></p>
+
+		<button
+			type="submit"
+			class="inline-flex w-full items-center justify-center rounded-lg bg-slc-navy px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-slc-navy/20 transition hover:bg-slc-indigo disabled:cursor-not-allowed disabled:opacity-60 md:w-auto"
+		>
+			Enviar
+		</button>
+	</form>
+</div>
+
+<script>
+	function wireLeadForm() {
+		const form = document.getElementById('lead-contact-form');
+		const statusEl = document.getElementById('lead-form-status');
+		const errEl = document.getElementById('lead-form-errors');
+		if (!form || !(form instanceof HTMLFormElement)) return;
+
+		const endpoint = form.dataset.endpoint ?? '';
+		const disabled = form.dataset.disabled === '1';
+
+		form.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			if (statusEl) {
+				statusEl.classList.add('hidden');
+				statusEl.textContent = '';
+			}
+			if (errEl) {
+				errEl.classList.add('hidden');
+				errEl.textContent = '';
+			}
+
+			if (disabled || !endpoint) {
+				if (statusEl) {
+					statusEl.className = 'text-sm text-amber-800';
+					statusEl.textContent = 'Configure PUBLIC_API_BASE_URL para enviar.';
+				}
+				return;
+			}
+
+			const submitBtn = form.querySelector('button[type="submit"]');
+			if (submitBtn instanceof HTMLButtonElement) submitBtn.disabled = true;
+
+			const fd = new FormData(form);
+			const stage = fd.get('business_stage');
+			const job = fd.get('job_title');
+			const msg = fd.get('message');
+			const body: Record<string, unknown> = {
+				name: String(fd.get('name') ?? '').trim(),
+				email: String(fd.get('email') ?? '').trim(),
+				company: String(fd.get('company') ?? '').trim(),
+				interest: String(fd.get('interest') ?? ''),
+				consent_lgpd: form.querySelector<HTMLInputElement>('#lc-consent')?.checked === true,
+				source_path: window.location.pathname,
+			};
+			if (job && String(job).trim()) body.job_title = String(job).trim();
+			if (stage && String(stage).trim()) body.business_stage = String(stage).trim();
+			if (msg && String(msg).trim()) body.message = String(msg).trim();
+
+			try {
+				const res = await fetch(endpoint, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						Accept: 'application/json',
+					},
+					body: JSON.stringify(body),
+				});
+
+				const data = await res.json().catch(() => ({}));
+
+				if (!res.ok) {
+					const errors = data?.errors as Record<string, string[]> | undefined;
+					let msgOut = data?.message ?? 'Não foi possível enviar. Tente novamente.';
+					if (errors && typeof errors === 'object') {
+						const lines = Object.values(errors).flat();
+						if (lines.length) msgOut = lines.join(' ');
+					}
+					if (errEl) {
+						errEl.classList.remove('hidden');
+						errEl.textContent = msgOut;
+					}
+					return;
+				}
+
+				if (statusEl) {
+					statusEl.className = 'text-sm text-green-800';
+					statusEl.classList.remove('hidden');
+					statusEl.textContent = 'Mensagem enviada. Entraremos em contacto em breve.';
+				}
+				form.reset();
+			} catch {
+				if (errEl) {
+					errEl.classList.remove('hidden');
+					errEl.textContent = 'Erro de rede. Verifique a ligação e tente novamente.';
+				}
+			} finally {
+				if (submitBtn instanceof HTMLButtonElement) submitBtn.disabled = false;
+			}
+		});
+	}
+
+	wireLeadForm();
+</script>

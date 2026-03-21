@@ -1,0 +1,49 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+import { fetchServicesListSafe } from '../../lib/api-build';
+
+const services = await fetchServicesListSafe();
+---
+
+<BaseLayout
+	title="Serviços — Sousa Lima Consultoria"
+	description="Consultoria em processos, desenvolvimento de software e cloud. Soluções alinhadas ao estágio do seu negócio."
+>
+	<SiteHeader currentPath={Astro.url.pathname} />
+	<main id="conteudo-principal" tabindex="-1" class="flex flex-1 flex-col px-4 py-16">
+		<div class="mx-auto w-full max-w-5xl">
+			<h1 class="font-display text-4xl font-bold text-slc-navy">Serviços</h1>
+			<p class="mt-4 max-w-2xl text-slc-text-muted">
+				Explore as linhas de atuação da SLC. Os textos completos vêm da API no build — se a API não estiver
+				disponível no momento do build, esta lista pode aparecer vazia.
+			</p>
+
+			{
+				services.length === 0 ? (
+					<p class="mt-12 rounded-xl border border-dashed border-slc-grey/30 bg-slc-bg p-8 text-center text-slc-text-muted">
+						Nenhum serviço disponível. Configure o build com <code class="font-mono text-sm">PUBLIC_API_BASE_URL</code>{' '}
+						e <code class="font-mono text-sm">API_READ_TOKEN</code> para gerar esta página a partir da API.
+					</p>
+				) : (
+					<ul class="mt-12 grid gap-6 md:grid-cols-2">
+						{services.map((s) => (
+							<li>
+								<a
+									href={`/servicos/${s.slug}`}
+									class="block h-full rounded-xl border border-slc-grey/15 bg-white p-6 shadow-sm transition hover:border-slc-magenta/30 hover:shadow-md"
+								>
+									<h2 class="font-display text-xl font-semibold text-slc-navy">{s.title}</h2>
+									{s.short_description && <p class="mt-3 text-sm text-slc-text-muted">{s.short_description}</p>}
+									<span class="mt-4 inline-block text-sm font-medium text-slc-purple">Ver detalhes →</span>
+								</a>
+							</li>
+						))}
+					</ul>
+				)
+			}
+		</div>
+	</main>
+	<SiteFooter />
+</BaseLayout>

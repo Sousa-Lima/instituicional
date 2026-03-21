@@ -1,0 +1,27 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+---
+
+<BaseLayout
+	title="Página não encontrada — Sousa Lima Consultoria"
+	description="O recurso pedido não existe."
+	noindex
+>
+	<SiteHeader currentPath={Astro.url.pathname} />
+	<main id="conteudo-principal" tabindex="-1" class="flex flex-1 flex-col items-center justify-center px-4 py-24 text-center">
+		<p class="text-sm font-semibold uppercase tracking-widest text-slc-navy">404</p>
+		<h1 class="font-display mt-2 text-3xl font-bold text-slc-navy">Página não encontrada</h1>
+		<p class="mt-4 max-w-md text-slc-text-muted">
+			O endereço pode ter sido alterado ou o link está incorreto.
+		</p>
+		<a
+			href="/"
+			class="mt-8 inline-flex rounded-lg bg-slc-navy px-6 py-3 text-sm font-semibold text-white transition hover:bg-slc-indigo"
+		>
+			Voltar ao início
+		</a>
+	</main>
+	<SiteFooter />
+</BaseLayout>

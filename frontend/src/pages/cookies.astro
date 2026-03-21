@@ -1,0 +1,108 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+---
+
+<BaseLayout
+	title="Política de cookies — Sousa Lima Consultoria"
+	description="Informações sobre cookies, tecnologias similares e como gerir o seu consentimento (LGPD)."
+>
+	<SiteHeader currentPath={Astro.url.pathname} />
+	<main id="conteudo-principal" tabindex="-1" class="flex flex-1 flex-col px-4 py-16">
+		<div class="mx-auto w-full max-w-3xl">
+			<h1 class="font-display text-4xl font-bold text-slc-navy">Política de cookies</h1>
+			<p class="mt-4 text-sm text-slc-text-muted">
+				Texto-base para revisão jurídica. Ajuste datas, contactos e lista técnica quando integrar ferramentas de
+				medição ou marketing.
+			</p>
+
+			<section class="mt-10 space-y-4 text-slc-text">
+				<h2 class="font-display text-xl font-semibold text-slc-navy">1. O que são cookies e tecnologias similares</h2>
+				<p class="leading-relaxed text-slc-text-muted">
+					Cookies são pequenos ficheiros colocados no seu dispositivo quando visita um site. Tecnologias similares
+					incluem armazenamento local (por exemplo <strong class="text-slc-text">localStorage</strong>) usado para
+					memorizar escolhas, sempre no mesmo domínio do site.
+				</p>
+			</section>
+
+			<section class="mt-10 space-y-4 text-slc-text">
+				<h2 class="font-display text-xl font-semibold text-slc-navy">2. Como utilizamos o consentimento</h2>
+				<p class="leading-relaxed text-slc-text-muted">
+					O primeiro acesso pode apresentar um painel para escolher categorias de cookies (estritamente
+					necessários; preferências; análise/estatísticas). A sua escolha é registada para não voltar a perguntar
+					em cada visita, salvo revogação ou alteração através do link <strong class="text-slc-text">Gerir
+						preferências de cookies</strong> no rodapé.
+				</p>
+			</section>
+
+			<section class="mt-10 space-y-4 text-slc-text">
+				<h2 class="font-display text-xl font-semibold text-slc-navy">3. Categorias</h2>
+				<ul class="list-inside list-disc space-y-2 leading-relaxed text-slc-text-muted">
+					<li>
+						<strong class="text-slc-text">Estritamente necessários:</strong> permitir o funcionamento do site e
+						memorizar a decisão de consentimento.
+					</li>
+					<li>
+						<strong class="text-slc-text">Preferências:</strong> guardar definições da sua visita quando existirem
+						(ex.: idioma ou layout), apenas se aceitar esta categoria.
+					</li>
+					<li>
+						<strong class="text-slc-text">Análise / estatísticas:</strong> entender utilização agregada do site
+						(ex. ferramentas de analytics), apenas após consentimento. Scripts desta categoria devem ser
+						carregados <em>após</em> o consentimento (ver evento técnico <code class="rounded bg-slc-bg px-1 text-xs">slc-consent-update</code> na implementação).
+					</li>
+				</ul>
+			</section>
+
+			<section class="mt-10 space-y-4 text-slc-text">
+				<h2 class="font-display text-xl font-semibold text-slc-navy">4. Registo técnico atual (site estático)</h2>
+				<div class="overflow-x-auto rounded-lg border border-slc-grey/20">
+					<table class="w-full min-w-[280px] text-left text-sm">
+						<thead class="bg-slc-bg text-xs uppercase tracking-wide text-slc-grey">
+							<tr>
+								<th class="px-3 py-2 font-semibold">Nome / chave</th>
+								<th class="px-3 py-2 font-semibold">Tipo</th>
+								<th class="px-3 py-2 font-semibold">Finalidade</th>
+								<th class="px-3 py-2 font-semibold">Duração</th>
+							</tr>
+						</thead>
+						<tbody class="divide-y divide-slc-grey/15 text-slc-text-muted">
+							<tr>
+								<td class="px-3 py-2 font-mono text-xs">slc_consent_v1</td>
+								<td class="px-3 py-2">localStorage (origem)</td>
+								<td class="px-3 py-2">Memorizar categorias de consentimento aceites.</td>
+								<td class="px-3 py-2">Até apagar o armazenamento do browser ou revogar.</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<p class="text-sm text-slc-text-muted">
+					Quando integrar terceiros (ex.: Google Analytics, tags de conversão), atualize esta tabela e o painel de
+					consentimento conforme a documentação interna de compliance e bases legais aplicáveis.
+				</p>
+			</section>
+
+			<section class="mt-10 space-y-4 text-slc-text">
+				<h2 class="font-display text-xl font-semibold text-slc-navy">5. Como alterar ou retirar o consentimento</h2>
+				<p class="leading-relaxed text-slc-text-muted">
+					Use <strong class="text-slc-text">Gerir preferências de cookies</strong> no rodapé ou o painel quando este
+					for apresentado. Pode também apagar dados do site nas definições do seu navegador; nesse caso o banner
+					poderá voltar a aparecer.
+				</p>
+			</section>
+
+			<section class="mt-10 space-y-4 text-slc-text">
+				<h2 class="font-display text-xl font-semibold text-slc-navy">6. Contacto</h2>
+				<p class="leading-relaxed text-slc-text-muted">
+					Para questões sobre dados pessoais e privacidade, utilize os contactos indicados na{' '}
+					<a href="/politica-privacidade" class="font-medium text-slc-purple underline hover:text-slc-navy">
+						política de privacidade
+					</a>
+					.
+				</p>
+			</section>
+		</div>
+	</main>
+	<SiteFooter />
+</BaseLayout>

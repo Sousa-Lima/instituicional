@@ -1,17 +1,18 @@
 @import "tailwindcss";
 
 /* Marca SLC — ver docs/definicoes/paleta-cores.md */
+/* Texto secundário e links: tons mais escuros para WCAG AA (contraste ≥ 4,5:1 em fundo claro). */
 @theme {
 	--color-slc-navy: #332c63;
 	--color-slc-magenta: #a64b91;
-	--color-slc-purple: #7d3c8c;
+	--color-slc-purple: #4a1e5c;
 	--color-slc-indigo: #534b91;
 	--color-slc-violet: #674e94;
-	--color-slc-grey: #808080;
+	--color-slc-grey: #555555;
 	--color-slc-bg: #faf9fc;
 	--color-slc-surface: #ffffff;
 	--color-slc-text: #1f1b2e;
-	--color-slc-text-muted: #5c566b;
+	--color-slc-text-muted: #2f2d38;
 
 	--font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
 	--font-display: "Outfit", var(--font-sans);
@@ -24,4 +25,40 @@
 	body {
 		@apply bg-slc-bg text-slc-text font-sans;
 	}
+	/* Foco visível em links (WCAG 2.4.7) — não sobrescreve focus:ring dos formulários. */
+	a:focus-visible {
+		outline: 2px solid var(--color-slc-navy);
+		outline-offset: 2px;
+		border-radius: 0.125rem;
+	}
+}
+
+/* “Saltar para o conteúdo” — só visível ao receber foco (teclado). */
+.slc-skip-link {
+	position: absolute;
+	left: -9999px;
+	top: 0;
+	z-index: 200;
+	padding: 0.75rem 1rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--color-slc-navy);
+	background: var(--color-slc-surface);
+	border-radius: 0.5rem;
+	box-shadow:
+		0 10px 15px -3px rgb(51 44 99 / 0.12),
+		0 4px 6px -4px rgb(51 44 99 / 0.08);
+}
+.slc-skip-link:focus {
+	position: fixed;
+	left: 1rem;
+	top: 1rem;
+	width: auto;
+	height: auto;
+	overflow: visible;
+	clip-path: none;
+	clip: auto;
+	white-space: normal;
+	outline: 2px solid var(--color-slc-navy);
+	outline-offset: 2px;
 }

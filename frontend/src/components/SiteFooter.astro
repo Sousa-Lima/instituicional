@@ -1,0 +1,45 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-slc-grey/20 bg-slc-surface px-4 py-10 text-sm text-slc-text-muted">
+	<div class="mx-auto flex max-w-5xl flex-col gap-6 md:flex-row md:items-start md:justify-between">
+		<div>
+			<a href="/" class="inline-block">
+				<picture>
+					<source
+						srcset="/sousa-lima-consultoria-logo-horizontal-colorido.webp"
+						type="image/webp"
+					/>
+					<img
+						src="/sousa-lima-consultoria-logo-horizontal-colorido.png"
+						alt="Sousa Lima Consultoria"
+						class="h-7 w-auto max-w-[220px] object-contain object-left md:h-8"
+						width="1000"
+						height="334"
+						loading="lazy"
+						decoding="async"
+					/>
+				</picture>
+			</a>
+			<p class="mt-2 max-w-md">
+				Conhecimento técnico a serviço da sua evolução.
+			</p>
+		</div>
+		<div class="flex flex-col gap-2 md:text-right">
+			<span class="text-xs font-semibold uppercase tracking-wider text-slc-grey">Legal</span>
+			<a href="/politica-privacidade" class="transition hover:text-slc-navy">Política de privacidade</a>
+			<a href="/cookies" class="transition hover:text-slc-navy">Política de cookies</a>
+			<button
+				type="button"
+				id="slc-cookie-manage"
+				class="min-h-11 text-left transition hover:text-slc-navy md:text-right"
+			>
+				Gerir preferências de cookies
+			</button>
+		</div>
+	</div>
+	<p class="mx-auto mt-8 max-w-5xl text-center text-xs text-slc-text-muted">
+		© {year} Sousa Lima Consultoria
+	</p>
+</footer>
