@@ -44,3 +44,5 @@ Esta tabela é também o **ponto de partida** para a primeira versão de conteú
 - Não reutilizar nomes de produtos, depoimentos ou layouts proprietários sem permissão.
 
 Diretrizes operacionais do site SLC (semântica, budget, CTA, formulários, SEO): [diretrizes-qualidade-site-slc.md](../definicoes/diretrizes-qualidade-site-slc.md).
+
+Mapa do site **MVP** (páginas, rodapé, breadcrumbs, JSON-LD): [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md).

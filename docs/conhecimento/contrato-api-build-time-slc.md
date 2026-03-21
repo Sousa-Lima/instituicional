@@ -2,6 +2,8 @@
 
 Proposta técnica alinhada ao [stack-tecnico-slc.md](../definicoes/stack-tecnico-slc.md), [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md), [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md) e [qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md).
 
+**Conteúdo editorial (ex.: Home):** textos acordados em [copy-home-v1-slc.md](copy-home-v1-slc.md) devem ser **armazenados no Laravel** e **entregues via API** para o Astro **no `build`** (SSG). Assim o HTML estático já inclui copy e estrutura principal, favorecendo **LCP** (pintura precoce do conteúdo) e **INP** (menos JS obrigatório na primeira interação para exibir texto).
+
 ---
 
 ## 1. Endpoints de build-time (descoberta de caminhos)

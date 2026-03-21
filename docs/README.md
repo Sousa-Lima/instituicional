@@ -28,3 +28,5 @@ Base de documentação interna para evoluir até a publicação do site e dos se
 | [conhecimento/referencia-layout-sites.md](conhecimento/referencia-layout-sites.md) | Inspiração de estrutura e UX ([Sagitta Digital](https://sagittadigital.com.br/), [Venturus](https://www.venturus.org.br/)). |
 | [conhecimento/conteudo-mensagens-referencia.md](conhecimento/conteudo-mensagens-referencia.md) | Mensagens: MVP, prazos, resultados e credibilidade (alinhado às referências). |
 | [conhecimento/planejamento-e-faltantes-site-institucional.md](conhecimento/planejamento-e-faltantes-site-institucional.md) | Fases do projeto, o que já está definido e checklist do que falta. |
+| [conhecimento/mapa-site-mvp-slc.md](conhecimento/mapa-site-mvp-slc.md) | Mapa do site MVP: navegação, legal, SEO, acessibilidade. |
+| [conhecimento/copy-home-v1-slc.md](conhecimento/copy-home-v1-slc.md) | Copy v1 da Home: hero, serviços, método, prova social, FAQ, rodapé. |

@@ -1,6 +1,6 @@
 # Planejamento e faltantes — site institucional SLC
 
-Atualizado conforme decisões de produto e stack. Referências: [stack-tecnico-slc.md](../definicoes/stack-tecnico-slc.md), [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md), [projeto-astro-laravel-institutional.md](projeto-astro-laravel-institutional.md), [conteudo-juridico-semente.md](../definicoes/conteudo-juridico-semente.md).
+Atualizado conforme decisões de produto e stack. Referências: [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md), [stack-tecnico-slc.md](../definicoes/stack-tecnico-slc.md), [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md), [projeto-astro-laravel-institutional.md](projeto-astro-laravel-institutional.md), [conteudo-juridico-semente.md](../definicoes/conteudo-juridico-semente.md).
 
 ---
 
@@ -15,6 +15,7 @@ Atualizado conforme decisões de produto e stack. Referências: [stack-tecnico-s
 | **Infra (agora)** | Foco em **publicar com Docker Swarm** ([base-publicacao.md](base-publicacao.md)). |
 | **Compliance** | Consentimento com **implementação técnica** (gate de scripts), não só texto — [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md). |
 | **Pós go-live** | Search Console, sitemap, monitoramento — **fase posterior**. |
+| **Mapa do site (MVP)** | Estrutura de navegação, rodapé legal e padrões SEO/a11y — [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md). |
 
 ---
 
@@ -22,7 +23,7 @@ Atualizado conforme decisões de produto e stack. Referências: [stack-tecnico-s
 
 | Fase | Entregas | Notas |
 |------|----------|--------|
-| **1. Conteúdo + compliance** | Mapa do site, copy v1, políticas; **banner/categorias** de cookies implementáveis | LGPD exige técnica + jurídico |
+| **1. Conteúdo + compliance** | [Mapa MVP](mapa-site-mvp-slc.md) como base; copy v1, políticas; **banner/categorias** de cookies implementáveis | LGPD exige técnica + jurídico |
 | **2. Design** | UI (Bento + glass + [paleta](../definicoes/paleta-cores.md)); validar **contraste AA** com glass | Ver checklist qualidade |
 | **3. Institucional Astro** | SSG, `fetch` no **build**, contrato de API, **webhook/CI** para rebuild ao mudar CMS | Ver [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md) |
 | **4. Admin Laravel** | Repositório separado: API + painel Inertia; consumido pelo build do **outro** repo (Astro) | Paralelo ou após MVP do site |
@@ -50,8 +51,8 @@ Atualizado conforme decisões de produto e stack. Referências: [stack-tecnico-s
 
 ### Conteúdo e legal
 
-- [ ] Mapa do site fechado (páginas e URLs).
-- [ ] Copy substituindo placeholders (após semente da referência).
+- [ ] **URLs e slugs** finais alinhados ao [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md) (ajustes após copy e jurídico).
+- [ ] **Copy** revisada após [copy-home-v1-slc.md](copy-home-v1-slc.md) (métricas N/X/Y e promessas com base real; tom final).
 - [ ] Políticas revisadas por advogado; **consentimento de cookies** implementado conforme [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md).
 
 ### Design
@@ -89,6 +90,6 @@ Atualizado conforme decisões de produto e stack. Referências: [stack-tecnico-s
 
 ## Próximo passo recomendado
 
-(1) Mapa do site + copy v1; (2) **dois repositórios** (frontend + admin), contrato de API e **webhook** entre pipelines; (3) stack Swarm com **healthcheck** e CI em cada repo.
+(1) Refinar [copy-home-v1-slc.md](copy-home-v1-slc.md) + slugs finais no [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md); (2) **dois repositórios** (frontend + admin), contrato de API e **webhook** entre pipelines; (3) stack Swarm com **healthcheck** e CI em cada repo.
 
 Atualize os checklists quando itens forem concluídos.
