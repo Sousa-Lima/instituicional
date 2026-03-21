@@ -43,6 +43,8 @@ Estrutura: **promessa → método → prova** (conversão + credibilidade).
 
 Inspirado no modelo de autoridade por linhas (referência Venturus), adaptado à SLC.
 
+**Copy v1 das três verticais:** [copy-servicos-verticais-v1-slc.md](copy-servicos-verticais-v1-slc.md).
+
 | Página | Função |
 |--------|--------|
 | **Landing `/servicos`** | Visão geral das competências; entrada para as verticais. |
@@ -71,7 +73,7 @@ Cada interna: entregas, diferenciais, CTA para contato; **breadcrumbs** obrigat�
 |--------|--------|
 | **Sobre a SLC** `/sobre` | História, posicionamento **consultivo** (“parceiro, não apenas fornecedor”), valores e time (se aplicável). |
 | **Blog / Insights** | Artigos técnicos e de negócio para **SEO semântico**; definir **um** slug raiz (`/blog` **ou** `/insights`). |
-| **Contato** `/contato` | Formulário **segmentado** B2B: empresa, cargo, motivo do contato, mensagem; alinhado a [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md) para dados pessoais. |
+| **Contato** `/contato` | Formulário **segmentado** B2B (empresa, cargo, interesse, estágio, mensagem, LGPD) — [formulario-contato-lead-slc.md](formulario-contato-lead-slc.md); [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md). |
 
 ---
 

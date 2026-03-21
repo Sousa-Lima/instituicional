@@ -2,7 +2,7 @@
 
 Registro do **tipo de informação** que os sites de referência transmitem bem — em especial **MVP** e **resultados** — para orientar redação e blocos do futuro site da Sousa Lima Consultoria. Ver também [referencia-layout-sites.md](referencia-layout-sites.md) (estrutura de página).
 
-**Copy aplicada (Home v1):** [copy-home-v1-slc.md](copy-home-v1-slc.md).
+**Copy aplicada (Home v1):** [copy-home-v1-slc.md](copy-home-v1-slc.md). **Verticais de serviço (v1):** [copy-servicos-verticais-v1-slc.md](copy-servicos-verticais-v1-slc.md).
 
 As fontes citadas são benchmarks de comunicação; textos finais da SLC devem ser **originais** e alinhados ao posicionamento interno.
 

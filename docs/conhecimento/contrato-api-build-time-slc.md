@@ -190,6 +190,21 @@ Definir política no **servidor que entrega o site estático** e/ou **edge**, co
 
 ---
 
+## 6. Leads (runtime — fora do SSG)
+
+O site estático **não** obtém leads no build. O formulário de contato é uma **ilha** no Astro que envia dados ao **Laravel** em tempo real.
+
+| Item | Definição |
+|------|-----------|
+| **Endpoint** | `POST /api/v1/lead/contact` |
+| **Corpo** | JSON (`name`, `email`, `company`, `interest`, `message`, `consent_lgpd`; campos adicionais opcionais — ver doc). |
+| **Autenticação** | **Não** usar o `API_READ_TOKEN` do pipeline; usar **CSRF** + rate limit + (opc.) captcha conforme política. |
+| **CORS** | Permitir origem do site público — [dominios-e-ambiente.md](../definicoes/dominios-e-ambiente.md). |
+
+Especificação completa (UX, WCAG, LGPD, INP, JSON estendido): [formulario-contato-lead-slc.md](formulario-contato-lead-slc.md).
+
+---
+
 ## Evolução
 
 Versionar a API em **`/api/v1/`**; mudanças que quebram o contrato exigem deploy coordenado ou janela de compatibilidade documentada entre os **dois repositórios**.

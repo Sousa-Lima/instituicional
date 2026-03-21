@@ -16,6 +16,7 @@ Atualizado conforme decisões de produto e stack. Referências: [mapa-site-mvp-s
 | **Compliance** | Consentimento com **implementação técnica** (gate de scripts), não só texto — [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md). |
 | **Pós go-live** | Search Console, sitemap, monitoramento — **fase posterior**. |
 | **Mapa do site (MVP)** | Estrutura de navegação, rodapé legal e padrões SEO/a11y — [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md). |
+| **Leads (contato)** | Formulário segmentado + `POST /api/v1/lead/contact` — [formulario-contato-lead-slc.md](formulario-contato-lead-slc.md). |
 
 ---
 
@@ -52,7 +53,7 @@ Atualizado conforme decisões de produto e stack. Referências: [mapa-site-mvp-s
 ### Conteúdo e legal
 
 - [ ] **URLs e slugs** finais alinhados ao [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md) (ajustes após copy e jurídico).
-- [ ] **Copy** revisada após [copy-home-v1-slc.md](copy-home-v1-slc.md) (métricas N/X/Y e promessas com base real; tom final).
+- [ ] **Copy** revisada: [copy-home-v1-slc.md](copy-home-v1-slc.md), [copy-servicos-verticais-v1-slc.md](copy-servicos-verticais-v1-slc.md) (KPIs X%, uptime; promessas com base real; tom final).
 - [ ] Políticas revisadas por advogado; **consentimento de cookies** implementado conforme [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md).
 
 ### Design
@@ -64,7 +65,7 @@ Atualizado conforme decisões de produto e stack. Referências: [mapa-site-mvp-s
 
 - [ ] **Repositório frontend (site):** Astro + Tailwind; CI próprio (build, artefato estático).
 - [ ] **Repositório admin:** Laravel + Inertia + React; API e painel; CI próprio (testes, deploy).
-- [ ] **Contrato de API** implementado conforme [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md) (slugs, interfaces TS, imagens com `width`/`height`, `API_READ_TOKEN`, payload do webhook).
+- [ ] **Contrato de API** implementado conforme [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md) (slugs, interfaces TS, imagens com `width`/`height`, `API_READ_TOKEN`, payload do webhook; leads em [formulario-contato-lead-slc.md](formulario-contato-lead-slc.md) / §6).
 - [ ] **Webhook / dispatch** do admin para acionar **pipeline do frontend** quando conteúdo mudar ([integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md)).
 - [ ] **Otimização de assets:** uso do **`<Image />` do Astro** para logo e imagens (WebP/AVIF, dimensões) — metas PSI ([projeto-astro-laravel-institutional.md](projeto-astro-laravel-institutional.md)).
 - [ ] Implementação e testes de performance (PSI).
@@ -90,6 +91,6 @@ Atualizado conforme decisões de produto e stack. Referências: [mapa-site-mvp-s
 
 ## Próximo passo recomendado
 
-(1) Refinar [copy-home-v1-slc.md](copy-home-v1-slc.md) + slugs finais no [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md); (2) **dois repositórios** (frontend + admin), contrato de API e **webhook** entre pipelines; (3) stack Swarm com **healthcheck** e CI em cada repo.
+(1) Refinar [copy-home-v1-slc.md](copy-home-v1-slc.md) e [copy-servicos-verticais-v1-slc.md](copy-servicos-verticais-v1-slc.md) + slugs finais no [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md); (2) **dois repositórios** (frontend + admin), contrato de API e **webhook** entre pipelines; (3) stack Swarm com **healthcheck** e CI em cada repo.
 
 Atualize os checklists quando itens forem concluídos.

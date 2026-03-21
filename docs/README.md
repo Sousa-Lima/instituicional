@@ -19,7 +19,8 @@ Base de documentação interna para evoluir até a publicação do site e dos se
 | [definicoes/dominios-e-ambiente.md](definicoes/dominios-e-ambiente.md) | Marca, domínio, ambientes e variáveis de ambiente em nível conceitual. |
 | [definicoes/stack-tecnico-slc.md](definicoes/stack-tecnico-slc.md) | Dois repos: frontend (Astro + Tailwind) e admin (Laravel + Inertia + React). |
 | [conhecimento/integracao-astro-ssg-laravel.md](conhecimento/integracao-astro-ssg-laravel.md) | SSG: API só no build; webhook/rebuild; risco de conteúdo defasado. |
-| [conhecimento/contrato-api-build-time-slc.md](conhecimento/contrato-api-build-time-slc.md) | Contrato primeiro; slugs; Services + Cases (`GET /api/v1/cases`); LCP/CLS; webhook; Bearer; CSP. |
+| [conhecimento/contrato-api-build-time-slc.md](conhecimento/contrato-api-build-time-slc.md) | Contrato primeiro; slugs; Services + Cases (`GET /api/v1/cases`); LCP/CLS; webhook; Bearer; CSP; leads `POST /api/v1/lead/contact` (§6). |
+| [conhecimento/formulario-contato-lead-slc.md](conhecimento/formulario-contato-lead-slc.md) | Formulário segmentado B2B (ilha Astro); `POST /api/v1/lead/contact`; WCAG, LGPD, CSRF, reCAPTCHA; INP &lt; 100 ms. |
 | [conhecimento/exemplo-fixture-case-enterprise-slc.md](conhecimento/exemplo-fixture-case-enterprise-slc.md) | JSON de exemplo Case “Enterprise” + notas de teste no Astro. |
 | [definicoes/conteudo-juridico-semente.md](definicoes/conteudo-juridico-semente.md) | Conteúdo/jurídico: referência inicial e políticas. |
 | [definicoes/compliance-ferramentas.md](definicoes/compliance-ferramentas.md) | LGPD: cookies, analytics, documentos legais. |
@@ -31,3 +32,4 @@ Base de documentação interna para evoluir até a publicação do site e dos se
 | [conhecimento/planejamento-e-faltantes-site-institucional.md](conhecimento/planejamento-e-faltantes-site-institucional.md) | Fases do projeto, o que já está definido e checklist do que falta. |
 | [conhecimento/mapa-site-mvp-slc.md](conhecimento/mapa-site-mvp-slc.md) | Mapa do site MVP: navegação, legal, SEO, acessibilidade. |
 | [conhecimento/copy-home-v1-slc.md](conhecimento/copy-home-v1-slc.md) | Copy v1 da Home: hero, serviços, método, prova social, FAQ, rodapé. |
+| [conhecimento/copy-servicos-verticais-v1-slc.md](conhecimento/copy-servicos-verticais-v1-slc.md) | Copy v1: Consultoria, Software/MVP, Cloud (API + Astro). |
