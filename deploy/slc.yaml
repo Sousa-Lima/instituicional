@@ -2,6 +2,9 @@
 #
 # Deploy: docker stack deploy -c deploy/slc.yaml slc
 #
+# Código Laravel: por defeito o bind de admin/ → /var/www/html (desenvolvimento até a app
+# estar testada; depois remover esse mount e publicar o código na imagem PHP).
+#
 # Dados persistentes no HOST (bind mounts), não em volumes Docker nomeados.
 # Criar no servidor (antes do primeiro deploy):
 #   mkdir -p /srv/sistemas/slc/data/storage/app/public \
@@ -37,6 +40,9 @@ x-app-defaults: &app-defaults
   environment:
     APP_ENV: production
     APP_DEBUG: "false"
+    # Fuso igual ao servidor (ajuste se necessário; no host: timedatectl)
+    TZ: America/Sao_Paulo
+    APP_TIMEZONE: America/Sao_Paulo
     APP_URL: https://api.sousalimaconsultoria.com.br
     TRUSTED_PROXIES: "*"
     FORCE_HTTPS: "true"
@@ -71,6 +77,12 @@ x-app-defaults: &app-defaults
     - source: slc_sousalima_smtp_password
       target: /run/secrets/slc_sousalima_smtp_password
   volumes:
+    # Código + vendor + .env no host (composer install em admin/ no servidor).
+    # Remover esta entrada quando a app estiver estável e for empacotada na imagem.
+    - type: bind
+      source: /srv/sistemas/slc/admin
+      target: /var/www/html
+    # Sobrepõem só uploads/cache persistentes (restante de storage vem do repo).
     - type: bind
       source: /srv/sistemas/slc/data/storage/app
       target: /var/www/html/storage/app
