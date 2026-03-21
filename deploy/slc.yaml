@@ -1,0 +1,129 @@
+# Stack SLC no Docker Swarm — referência de publicação do repositório.
+#
+# Deploy: docker stack deploy -c deploy/slc.yaml slc
+#
+# Pré-requisitos:
+#   - Rede overlay externa traefik-public (partilhada com o Traefik).
+#   - Proxy Traefik com certresolver "le" (Let's Encrypt) nos entrypoints web/websecure.
+#   - Secrets: slc_db_password, slc_app_key, slc_jwt_secret (docker secret create …).
+#   - PostgreSQL e Redis acessíveis nos hostnames DB_HOST / REDIS_HOST (este ficheiro
+#     assume serviços postgres e redis noutra stack ou nós externos; ajustar se necessário).
+#
+# Frontend: imagem nginx genérica — publicar artefactos Astro (SSG) via CI (imagem própria
+# ou volume montado); caso contrário o contentor serve a página default do nginx.
+
+version: '3.9'
+
+x-app-defaults: &app-defaults
+  image: eolimabr/php8.4-sousalima-multitenant:latest
+  working_dir: /var/www/html
+  networks:
+    - internal
+    - traefik-public
+  environment:
+    APP_ENV: production
+    APP_DEBUG: "false"
+    APP_URL: https://api.sousalimaconsultoria.com.br
+    TRUSTED_PROXIES: "*"
+    FORCE_HTTPS: "true"
+    DB_CONNECTION: pgsql
+    DB_HOST: postgres
+    DB_PORT: "5432"
+    DB_DATABASE: slc_admin
+    DB_USERNAME: slc_user
+    REDIS_HOST: redis
+    CACHE_STORE: redis
+    SESSION_DRIVER: redis
+    QUEUE_CONNECTION: redis
+  secrets:
+    - source: slc_db_password
+      target: /run/secrets/db_password
+    - source: slc_app_key
+      target: /run/secrets/app_key
+    - source: slc_jwt_secret
+      target: /run/secrets/jwt_secret
+
+services:
+
+  # ─── FRONTEND (ASTRO SSG) ──────────────────────────────────────────────────
+  frontend:
+    image: nginx:1.25-alpine
+    networks:
+      - traefik-public
+    deploy:
+      replicas: 2
+      labels:
+        - "traefik.enable=true"
+        - "traefik.swarm.network=traefik-public"
+        - "traefik.http.routers.slc-front.rule=Host(`sousalimaconsultoria.com.br`) || Host(`www.sousalimaconsultoria.com.br`)"
+        - "traefik.http.routers.slc-front.entrypoints=websecure"
+        - "traefik.http.routers.slc-front.tls=true"
+        - "traefik.http.routers.slc-front.tls.certresolver=le" # Ajustado para 'le'
+        - "traefik.http.services.slc-front.loadbalancer.server.port=80"
+        # Headers de Segurança
+        - "traefik.http.routers.slc-front.middlewares=slc-headers"
+        - "traefik.http.middlewares.slc-headers.headers.stsSeconds=31536000"
+        - "traefik.http.middlewares.slc-headers.headers.forceSTSHeader=true"
+        - "traefik.http.middlewares.slc-headers.headers.frameDeny=true"
+
+  # ─── STATIC ASSETS ──────────────────────────────────
+  static:
+    image: nginx:1.25-alpine
+    networks:
+      - traefik-public
+    volumes:
+      - app_public_storage:/usr/share/nginx/html/storage:ro
+    deploy:
+      replicas: 2
+      labels:
+        - "traefik.enable=true"
+        - "traefik.swarm.network=traefik-public"
+        - "traefik.http.routers.slc-static.rule=Host(`static.sousalimaconsultoria.com.br`)"
+        - "traefik.http.routers.slc-static.entrypoints=websecure"
+        - "traefik.http.routers.slc-static.tls=true"
+        - "traefik.http.routers.slc-static.tls.certresolver=le" # Ajustado para 'le'
+        - "traefik.http.services.slc-static.loadbalancer.server.port=80"
+
+  # ─── BACKEND API & ADMIN (LARAVEL) ──────────────────────────────
+  app:
+    <<: *app-defaults
+    volumes:
+      - app_storage:/var/www/html/storage/app
+      - app_public_storage:/var/www/html/public/storage
+    deploy:
+      replicas: 2
+      labels:
+        - "traefik.enable=true"
+        - "traefik.swarm.network=traefik-public"
+        - "traefik.http.routers.slc-api.rule=Host(`api.sousalimaconsultoria.com.br`)"
+        - "traefik.http.routers.slc-api.entrypoints=websecure"
+        - "traefik.http.routers.slc-api.tls=true"
+        - "traefik.http.routers.slc-api.tls.certresolver=le" # Ajustado para 'le'
+        - "traefik.http.services.slc-api.loadbalancer.server.port=80"
+
+  # ─── WORKER (SEM EXPOSIÇÃO TRAEFIK) ──────────────────────────
+  queue:
+    <<: *app-defaults
+    command: php artisan queue:work --verbose --tries=3 --timeout=90
+    deploy:
+      replicas: 1
+      # No worker não precisamos de labels do Traefik, pois ele não recebe tráfego HTTP externas
+
+networks:
+  traefik-public:
+    external: true
+  internal:
+    driver: overlay
+    attachable: true
+
+volumes:
+  app_storage:
+  app_public_storage:
+
+secrets:
+  slc_db_password:
+    external: true
+  slc_app_key:
+    external: true
+  slc_jwt_secret:
+    external: true

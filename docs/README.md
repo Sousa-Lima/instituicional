@@ -8,6 +8,7 @@ Base de documentação interna para evoluir até a publicação do site e dos se
 |--------|-----|
 | `conhecimento/` | Arquitetura, publicação, runbooks e notas técnicas. |
 | `definicoes/` | Glossário, decisões de produto, domínio e convenções. |
+| `deploy/` | Stack Swarm de referência (`slc.yaml`) — ver [base-publicacao.md](conhecimento/base-publicacao.md). |
 
 ## Documentos
 
