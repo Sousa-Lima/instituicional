@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+/* Marca SLC — ver docs/definicoes/paleta-cores.md */
+@theme {
+	--color-slc-navy: #332c63;
+	--color-slc-magenta: #a64b91;
+	--color-slc-purple: #7d3c8c;
+	--color-slc-indigo: #534b91;
+	--color-slc-violet: #674e94;
+	--color-slc-grey: #808080;
+	--color-slc-bg: #faf9fc;
+	--color-slc-surface: #ffffff;
+	--color-slc-text: #1f1b2e;
+	--color-slc-text-muted: #5c566b;
+
+	--font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+	--font-display: "Outfit", var(--font-sans);
+}
+
+@layer base {
+	html {
+		@apply scroll-smooth antialiased;
+	}
+	body {
+		@apply bg-slc-bg text-slc-text font-sans;
+	}
+}

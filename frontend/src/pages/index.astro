@@ -1,0 +1,79 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const apiBase = import.meta.env.PUBLIC_API_BASE_URL ?? '';
+const showApiDevPanel = import.meta.env.DEV;
+---
+
+<BaseLayout
+	title="Sousa Lima Consultoria"
+	description="Consultoria enterprise em processos, desenvolvimento de software e cloud."
+>
+	<header class="border-b border-slc-grey/20 bg-slc-surface/80 backdrop-blur-sm">
+		<div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4">
+			<span class="font-display text-lg font-semibold tracking-tight text-slc-navy">
+				Sousa Lima Consultoria
+			</span>
+			<nav class="flex gap-6 text-sm font-medium text-slc-text-muted">
+				<a href="#servicos" class="transition hover:text-slc-navy">Serviços</a>
+				<a href="#cases" class="transition hover:text-slc-navy">Cases</a>
+				<a href="#contato" class="transition hover:text-slc-navy">Contato</a>
+			</nav>
+		</div>
+	</header>
+
+	<main class="flex flex-1 flex-col">
+		<section
+			class="relative overflow-hidden bg-gradient-to-br from-slc-bg via-white to-slc-magenta/5 px-4 py-24 md:py-32"
+		>
+			<div class="mx-auto max-w-5xl">
+				<p class="mb-3 text-sm font-semibold uppercase tracking-widest text-slc-purple">
+					Institucional
+				</p>
+				<h1 class="font-display max-w-3xl text-4xl font-bold leading-tight text-slc-navy md:text-5xl">
+					Tecnologia e processos alinhados ao negócio
+				</h1>
+				<p class="mt-6 max-w-2xl text-lg text-slc-text-muted">
+					Site em Astro (SSG), integrado à API Laravel. Próximos passos: páginas de serviços, cases e
+					formulário de contacto.
+				</p>
+				<div class="mt-10 flex flex-wrap gap-4">
+					<a
+						href="#contato"
+						class="inline-flex items-center justify-center rounded-lg bg-slc-navy px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-slc-navy/20 transition hover:bg-slc-indigo"
+					>
+						Falar connosco
+					</a>
+					<a
+						href="#servicos"
+						class="inline-flex items-center justify-center rounded-lg border border-slc-navy/15 bg-white px-6 py-3 text-sm font-semibold text-slc-navy transition hover:border-slc-magenta/40"
+					>
+						Ver serviços
+					</a>
+				</div>
+			</div>
+		</section>
+
+		{
+			showApiDevPanel && (
+				<section id="api-dev" class="border-t border-slc-grey/15 bg-white px-4 py-16">
+					<div class="mx-auto max-w-5xl">
+						<h2 class="font-display text-2xl font-semibold text-slc-navy">API (só em dev)</h2>
+						<p class="mt-2 text-slc-text-muted">
+							<code class="rounded bg-slc-bg px-1.5 py-0.5 text-sm">PUBLIC_API_BASE_URL</code> no{' '}
+							<code class="rounded bg-slc-bg px-1.5 py-0.5 text-sm">.env</code> — não aparece esta caixa no{' '}
+							<code class="text-sm">astro build</code>.
+						</p>
+						<p class="mt-4 rounded-lg border border-dashed border-slc-grey/30 bg-slc-bg p-4 font-mono text-sm text-slc-text-muted">
+							{apiBase ? `Base: ${apiBase}` : 'PUBLIC_API_BASE_URL vazio — só UI estática.'}
+						</p>
+					</div>
+				</section>
+			)
+		}
+	</main>
+
+	<footer class="border-t border-slc-grey/20 bg-slc-surface px-4 py-8 text-center text-sm text-slc-text-muted">
+		© {new Date().getFullYear()} Sousa Lima Consultoria
+	</footer>
+</BaseLayout>
