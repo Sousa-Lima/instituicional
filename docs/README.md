@@ -8,6 +8,7 @@ Base de documentação interna para evoluir até a publicação do site e dos se
 |--------|-----|
 | `conhecimento/` | Arquitetura, publicação, runbooks e notas técnicas. |
 | `definicoes/` | Glossário, decisões de produto, domínio e convenções. |
+| `admin/` | App **Laravel** (API/painel, base); [admin/README.md](../admin/README.md); pode tornar-se repositório Git separado. |
 | `deploy/` | Stack Swarm (`slc.yaml`), snippets Laravel (`deploy/laravel/`), [guia-deploy-e-atualizacao.md](../deploy/guia-deploy-e-atualizacao.md); ver [deploy/README.md](../deploy/README.md) e [procedimento-deploy-producao-slc.md](conhecimento/procedimento-deploy-producao-slc.md). |
 
 ## Documentos
@@ -18,7 +19,8 @@ Base de documentação interna para evoluir até a publicação do site e dos se
 | [conhecimento/procedimento-deploy-producao-slc.md](conhecimento/procedimento-deploy-producao-slc.md) | Runbook: Swarm, Traefik, DNS, secrets, dados no host, build Astro, stack `slc`, verificação e rollback. |
 | [conhecimento/normas-arquitetura-backend-infra.md](conhecimento/normas-arquitetura-backend-infra.md) | SSG/ISR, imagens, terceiros e security headers (CSP, HSTS, framing). |
 | [conhecimento/projeto-astro-laravel-institutional.md](conhecimento/projeto-astro-laravel-institutional.md) | Stack Astro + Laravel 12: frontend, Core Web Vitals, API, JWT, SEO, WCAG, clean code. |
-| [definicoes/dominios-e-ambiente.md](definicoes/dominios-e-ambiente.md) | Marca, domínio, ambientes e variáveis de ambiente em nível conceitual. |
+| [definicoes/dominios-e-ambiente.md](definicoes/dominios-e-ambiente.md) | Marca, domínio canónico (apex), `www`→301, ambientes e variáveis em nível conceitual. |
+| [conhecimento/guia-copy-juridico-lgpd-slc.md](conhecimento/guia-copy-juridico-lgpd-slc.md) | Copy, jurídico (políticas/termos) e cookies LGPD (gate de scripts, checklist). |
 | [definicoes/stack-tecnico-slc.md](definicoes/stack-tecnico-slc.md) | Dois repos: frontend (Astro + Tailwind) e admin (Laravel + Inertia + React). |
 | [conhecimento/integracao-astro-ssg-laravel.md](conhecimento/integracao-astro-ssg-laravel.md) | SSG: API só no build; webhook/rebuild; risco de conteúdo defasado. |
 | [conhecimento/contrato-api-build-time-slc.md](conhecimento/contrato-api-build-time-slc.md) | Contrato primeiro; slugs; Services + Cases (`GET /api/v1/cases`); LCP/CLS; webhook; Bearer; CSP; leads `POST /api/v1/lead/contact` (§6). |

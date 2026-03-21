@@ -2,6 +2,8 @@
 
 Objetivo: atender **LGPD** e boas práticas de **privacidade** sem abandonar métricas úteis para evolução do site.
 
+**Guia operacional (copy, políticas, banner, gate de scripts):** [guia-copy-juridico-lgpd-slc.md](../conhecimento/guia-copy-juridico-lgpd-slc.md).
+
 ## Consentimento de cookies — implementação técnica
 
 O consentimento **não** pode ser só texto jurídico na página. É necessário:

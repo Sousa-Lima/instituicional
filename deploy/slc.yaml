@@ -159,11 +159,12 @@ services:
         read_only: true
     healthcheck: *healthcheck-nginx
     deploy:
-      replicas: 2
+      replicas: 1
       labels:
         - "traefik.enable=true"
         - "traefik.swarm.network=traefik-public"
-        - "traefik.http.routers.slc-front.rule=Host(`sousalimaconsultoria.com.br`) || Host(`www.sousalimaconsultoria.com.br`)"
+        # Canónico: só apex; www → 301 para https://sousalimaconsultoria.com.br (SEO)
+        - "traefik.http.routers.slc-front.rule=Host(`sousalimaconsultoria.com.br`)"
         - "traefik.http.routers.slc-front.entrypoints=websecure"
         - "traefik.http.routers.slc-front.tls=true"
         - "traefik.http.routers.slc-front.tls.certresolver=le"
@@ -172,6 +173,16 @@ services:
         - "traefik.http.middlewares.slc-headers.headers.stsSeconds=31536000"
         - "traefik.http.middlewares.slc-headers.headers.forceSTSHeader=true"
         - "traefik.http.middlewares.slc-headers.headers.frameDeny=true"
+        - "traefik.http.routers.slc-front-www.rule=Host(`www.sousalimaconsultoria.com.br`)"
+        - "traefik.http.routers.slc-front-www.entrypoints=websecure"
+        - "traefik.http.routers.slc-front-www.tls=true"
+        - "traefik.http.routers.slc-front-www.tls.certresolver=le"
+        - "traefik.http.routers.slc-front-www.service=slc-front"
+        - "traefik.http.routers.slc-front-www.middlewares=slc-www-to-apex"
+        - "traefik.http.routers.slc-front-www.priority=20"
+        - "traefik.http.middlewares.slc-www-to-apex.redirectregex.regex=^https?://www\\.sousalimaconsultoria\\.com\\.br(.*)$$"
+        - "traefik.http.middlewares.slc-www-to-apex.redirectregex.replacement=https://sousalimaconsultoria.com.br$${1}"
+        - "traefik.http.middlewares.slc-www-to-apex.redirectregex.permanent=true"
 
   # ─── STATIC ASSETS (mesmo diretório que storage/app/public no Laravel) ─────
   static:
@@ -185,7 +196,7 @@ services:
         read_only: true
     healthcheck: *healthcheck-nginx
     deploy:
-      replicas: 2
+      replicas: 1
       labels:
         - "traefik.enable=true"
         - "traefik.swarm.network=traefik-public"
@@ -200,7 +211,7 @@ services:
     <<: *app-defaults
     healthcheck: *healthcheck-php
     deploy:
-      replicas: 2
+      replicas: 1
       labels:
         - "traefik.enable=true"
         - "traefik.swarm.network=traefik-public"

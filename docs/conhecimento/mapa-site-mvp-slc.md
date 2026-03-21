@@ -6,6 +6,8 @@ Proposta alinhada a [diretrizes-qualidade-site-slc.md](../definicoes/diretrizes-
 
 As **URLs** são sugestão; fechar slugs no admin e no `GET /api/v1/content/slugs` — [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md).
 
+**Host canónico:** `https://sousalimaconsultoria.com.br` (sem `www`); redirecionamento de `www` no edge — [dominios-e-ambiente.md](../definicoes/dominios-e-ambiente.md).
+
 ---
 
 ## Visão geral — navegação principal

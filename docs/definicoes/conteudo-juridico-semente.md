@@ -7,6 +7,10 @@ Os **perfis** descritos em [referencia-layout-sites.md](../conhecimento/referenc
 - **Não** copiar textos nem marcas de terceiros.
 - **Sim** usar essa referência para estruturar a primeira versão de copy e, depois, **substituir** por textos originais da Sousa Lima Consultoria e **revisão jurídica** (privacidade, termos, cookies).
 
+## Guia operacional (copy + jurídico + LGPD)
+
+Checklist detalhado: [guia-copy-juridico-lgpd-slc.md](../conhecimento/guia-copy-juridico-lgpd-slc.md).
+
 ## Documentos legais
 
 Textos de políticas devem ser **redigidos ou validados por profissional habilitado**; esta documentação não contém modelos legais.

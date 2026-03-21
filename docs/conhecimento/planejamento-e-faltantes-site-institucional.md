@@ -17,6 +17,9 @@ Atualizado conforme decisões de produto e stack. Referências: [mapa-site-mvp-s
 | **Pós go-live** | Search Console, sitemap, monitoramento — **fase posterior**. |
 | **Mapa do site (MVP)** | Estrutura de navegação, rodapé legal e padrões SEO/a11y — [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md). |
 | **Leads (contato)** | Formulário segmentado + `POST /api/v1/lead/contact` — [formulario-contato-lead-slc.md](formulario-contato-lead-slc.md). |
+| **URL canónica** | **`https://sousalimaconsultoria.com.br`** (apex); `www` redireciona com 301 — [dominios-e-ambiente.md](../definicoes/dominios-e-ambiente.md), [`deploy/slc.yaml`](../../deploy/slc.yaml) (Traefik). |
+| **Design (Figma)** | **Sem** biblioteca Figma obrigatória; entregas baseadas no **designer** (alinhamento à [paleta](../definicoes/paleta-cores.md), Bento/glass conforme [projeto-astro-laravel-institutional.md](projeto-astro-laravel-institutional.md)). |
+| **PSI / WCAG / JSON-LD** | Seguir **melhores práticas** já documentadas ([qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md), [diretrizes-qualidade-site-slc.md](../definicoes/diretrizes-qualidade-site-slc.md), [projeto-astro-laravel-institutional.md](projeto-astro-laravel-institutional.md)); **iterar** após go-live com medições reais. |
 
 ---
 
@@ -54,12 +57,12 @@ Atualizado conforme decisões de produto e stack. Referências: [mapa-site-mvp-s
 
 - [ ] **URLs e slugs** finais alinhados ao [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md) (ajustes após copy e jurídico).
 - [ ] **Copy** revisada: [copy-home-v1-slc.md](copy-home-v1-slc.md), [copy-servicos-verticais-v1-slc.md](copy-servicos-verticais-v1-slc.md) (KPIs X%, uptime; promessas com base real; tom final).
-- [ ] Políticas revisadas por advogado; **consentimento de cookies** implementado conforme [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md).
+- [ ] Políticas revisadas por advogado; **consentimento de cookies** implementado conforme [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md) e [guia-copy-juridico-lgpd-slc.md](guia-copy-juridico-lgpd-slc.md).
 
 ### Design
 
-- [ ] UI kit / Figma alinhado à paleta.
-- [ ] Decisão **www** canônico ([dominios-e-ambiente.md](../definicoes/dominios-e-ambiente.md)).
+- [ ] Entregas do **designer** alinhadas à [paleta](../definicoes/paleta-cores.md) e às diretrizes (Bento, glass) — **sem** obrigatoriedade de ficheiro Figma no repositório.
+- [x] **www** canónico: apex principal — [dominios-e-ambiente.md](../definicoes/dominios-e-ambiente.md).
 
 ### Código
 
@@ -72,8 +75,9 @@ Atualizado conforme decisões de produto e stack. Referências: [mapa-site-mvp-s
 
 ### Qualidade (acréscimos)
 
-- [ ] **WCAG:** validar **contraste** da [paleta](../definicoes/paleta-cores.md), especialmente com **glassmorphism** e fundos variáveis.
-- [ ] **Schema.org:** JSON-LD **`Organization`** e **`ProfessionalService`** (e `LocalBusiness` se aplicável) no Astro ([projeto-astro-laravel-institutional.md](projeto-astro-laravel-institutional.md)).
+- [ ] **WCAG:** validar **contraste** da [paleta](../definicoes/paleta-cores.md), especialmente com **glassmorphism** e fundos variáveis — iterar após primeiro deploy.
+- [ ] **Schema.org:** JSON-LD **`Organization`** e **`ProfessionalService`** (e `LocalBusiness` se aplicável) no Astro ([projeto-astro-laravel-institutional.md](projeto-astro-laravel-institutional.md)) — seguir boas práticas; refinar com dados reais.
+- [ ] **PSI / Core Web Vitals:** medir no ambiente real e melhorar incrementalmente ([qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md)).
 
 ### Infra
 
@@ -94,6 +98,6 @@ Atualizado conforme decisões de produto e stack. Referências: [mapa-site-mvp-s
 
 ## Próximo passo recomendado
 
-(1) Refinar [copy-home-v1-slc.md](copy-home-v1-slc.md) e [copy-servicos-verticais-v1-slc.md](copy-servicos-verticais-v1-slc.md) + slugs finais no [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md); (2) **dois repositórios** (frontend + admin), contrato de API e **webhook** entre pipelines; (3) stack Swarm com **healthcheck** e CI em cada repo.
+(1) [guia-copy-juridico-lgpd-slc.md](guia-copy-juridico-lgpd-slc.md) — copy final + jurídico + banner/gate de cookies; (2) **dois repositórios** (frontend + admin), contrato de API e **webhook**; (3) CI em cada repo; (4) após deploy, PSI/WCAG/JSON-LD com medição e iteração.
 
 Atualize os checklists quando itens forem concluídos.

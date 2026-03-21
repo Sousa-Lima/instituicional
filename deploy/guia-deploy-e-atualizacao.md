@@ -2,21 +2,23 @@
 
 Passo a passo para **primeiro deploy** e para **atualizações** posteriores no Docker Swarm. Complementa [procedimento-deploy-producao-slc.md](../docs/conhecimento/procedimento-deploy-producao-slc.md) com foco operacional.
 
-**Ficheiro da stack:** [`slc.yaml`](slc.yaml)  
+**Ficheiro da stack:** `[slc.yaml](slc.yaml)`  
 **Nome da stack:** `slc`
 
 ---
 
 ## Visão geral da ordem
 
-| Ordem | O quê |
-|-------|--------|
-| 1 | Infra mínima (Swarm, rede `traefik-public`, Traefik com `le`) |
-| 2 | Diretórios em `/srv/sistemas/slc/data/` no host |
-| 3 | **Secrets** Swarm (`slc_sousalima_*`) — valores sensíveis |
-| 4 | Ajustar **variáveis não secretas** no `slc.yaml` (ou ficheiro por cima) |
-| 5 | `docker stack deploy` |
-| 6 | Para atualizar: alterar YAML e/ou imagem e/ou artefactos e voltar ao passo 5 |
+
+| Ordem | O quê                                                                        |
+| ----- | ---------------------------------------------------------------------------- |
+| 1     | Infra mínima (Swarm, rede `traefik-public`, Traefik com `le`)                |
+| 2     | Diretórios em `/srv/sistemas/slc/data/` no host                              |
+| 3     | **Secrets** Swarm (`slc_sousalima_`*) — valores sensíveis                    |
+| 4     | Ajustar **variáveis não secretas** no `slc.yaml` (ou ficheiro por cima)      |
+| 5     | `docker stack deploy`                                                        |
+| 6     | Para atualizar: alterar YAML e/ou imagem e/ou artefactos e voltar ao passo 5 |
+
 
 ---
 
@@ -27,7 +29,7 @@ docker info | grep -i Swarm   # deve indicar Swarm: active
 docker network create --driver overlay traefik-public   # ignorar erro se já existir
 ```
 
-O proxy Traefik deve estar a correr com resolver ACME nomeado **`le`** (igual às labels do `slc.yaml`).
+O proxy Traefik deve estar a correr com resolver ACME nomeado `**le**` (igual às labels do `slc.yaml`).
 
 ---
 
@@ -52,14 +54,16 @@ sudo chown -R 999:1000 /srv/sistemas/slc/data/redis
 
 ## 3. Definir os **secrets** Swarm
 
-Os nomes são **fixos** no [`slc.yaml`](slc.yaml) (secção `secrets:` no final). Não podem ser alterados no YAML sem editar o ficheiro.
+Os nomes são **fixos** no `[slc.yaml](slc.yaml)` (secção `secrets:` no final). Não podem ser alterados no YAML sem editar o ficheiro.
 
-| Nome do secret | Conteúdo típico |
-|----------------|-----------------|
-| `slc_sousalima_db_password` | Password do utilizador PostgreSQL (`slc_user`) |
-| `slc_sousalima_app_key` | `APP_KEY` Laravel (ex.: `base64:...`) |
-| `slc_sousalima_jwt_secret` | Segredo JWT (se a app usar) |
-| `slc_sousalima_smtp_password` | Password da caixa Microsoft 365 (SMTP) |
+
+| Nome do secret                | Conteúdo típico                                |
+| ----------------------------- | ---------------------------------------------- |
+| `slc_sousalima_db_password`   | Password do utilizador PostgreSQL (`slc_user`) |
+| `slc_sousalima_app_key`       | `APP_KEY` Laravel (ex.: `base64:...`)          |
+| `slc_sousalima_jwt_secret`    | Segredo JWT (se a app usar)                    |
+| `slc_sousalima_smtp_password` | Password da caixa Microsoft 365 (SMTP)         |
+
 
 ### Criar a partir da linha de comandos (exemplos genéricos)
 
@@ -81,7 +85,7 @@ php artisan key:generate --show
 O comando imprime uma linha no formato `base64:...`. **Sem** nova linha no final, crie o secret no nó Swarm (manager):
 
 ```bash
-echo -n "base64:COLE_AQUI_A_CHAVE_GERADA" | docker secret create slc_sousalima_app_key -
+echo -n "base64:Sl/qMydC08/OU9hdf/S1OsXcmWSkH/dahXHMskHSK8Q=" | docker secret create slc_sousalima_app_key -
 ```
 
 Substitua `base64:COLE_AQUI_A_CHAVE_GERADA` pelo valor completo que o Artisan mostrou.
@@ -116,15 +120,17 @@ docker secret ls | grep slc_sousalima
 
 Editar o repositório no servidor ou no teu PC e fazer `git pull` no servidor antes do deploy.
 
-| Onde no YAML | Exemplos |
-|--------------|----------|
-| `x-app-defaults` → `environment` | `APP_URL`, `MAIL_USERNAME`, `MAIL_FROM_ADDRESS`, `DB_DATABASE`, … |
-| `MAIL_USERNAME` | Endereço **completo** da caixa Microsoft 365 que autentica no SMTP |
-| Imagem | `image: eolimabr/php8.4-sousalima-multitenant:TAG` — preferir **tag** fixa em produção |
+
+| Onde no YAML                     | Exemplos                                                                               |
+| -------------------------------- | -------------------------------------------------------------------------------------- |
+| `x-app-defaults` → `environment` | `APP_URL`, `MAIL_USERNAME`, `MAIL_FROM_ADDRESS`, `DB_DATABASE`, …                      |
+| `MAIL_USERNAME`                  | Endereço **completo** da caixa Microsoft 365 que autentica no SMTP                     |
+| Imagem                           | `image: eolimabr/php8.4-sousalima-multitenant:TAG` — preferir **tag** fixa em produção |
+
 
 O **SMTP** (host, porta, TLS) já está orientado a **Office 365** no YAML; a password vem **só** do secret `slc_sousalima_smtp_password`.
 
-No **Laravel**, garantir que `config/database.php`, `config/app.php`, `config/mail.php` leem os ficheiros em `/run/secrets/slc_sousalima_*` conforme [`laravel/README.md`](laravel/README.md).
+No **Laravel**, garantir que `config/database.php`, `config/app.php`, `config/mail.php` leem os ficheiros em `/run/secrets/slc_sousalima_`* conforme `[laravel/README.md](laravel/README.md)`.
 
 ---
 
@@ -148,7 +154,7 @@ docker service ps slc_app --no-trunc
 
 ## 6. Atualizar a stack (dia a dia)
 
-Sempre que alterares o **`deploy/slc.yaml`** (réplicas, variáveis, imagem, labels Traefik):
+Sempre que alterares o `**deploy/slc.yaml**` (réplicas, variáveis, imagem, labels Traefik):
 
 ```bash
 cd /srv/sistemas/slc
@@ -190,11 +196,11 @@ Ou manter os mesmos nomes e usar o truque de **remover o serviço da stack**, at
 
 ## 8. Checklist rápido antes de cada deploy
 
-- [ ] Secrets necessários criados (`docker secret ls`).
-- [ ] Pastas `data/*` existem e permissões corretas.
-- [ ] `MAIL_USERNAME` e remetentes corretos no YAML.
-- [ ] Imagem Laravel com tag desejada.
-- [ ] Traefik e DNS a apontar para o servidor.
+- Secrets necessários criados (`docker secret ls`).
+- Pastas `data/`* existem e permissões corretas.
+- `MAIL_USERNAME` e remetentes corretos no YAML.
+- Imagem Laravel com tag desejada.
+- Traefik e DNS a apontar para o servidor.
 
 ---
 
@@ -217,8 +223,11 @@ docker stack rm slc
 
 ## Documentos relacionados
 
-| Ficheiro | Conteúdo |
-|----------|----------|
-| [`slc.yaml`](slc.yaml) | Definição completa dos serviços |
-| [`laravel/README.md`](laravel/README.md) | Leitura de secrets no Laravel |
+
+| Ficheiro                                                                                        | Conteúdo                                  |
+| ----------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| `[slc.yaml](slc.yaml)`                                                                          | Definição completa dos serviços           |
+| `[laravel/README.md](laravel/README.md)`                                                        | Leitura de secrets no Laravel             |
 | [procedimento-deploy-producao-slc.md](../docs/conhecimento/procedimento-deploy-producao-slc.md) | Runbook alargado (DNS, Traefik, rollback) |
+
+
