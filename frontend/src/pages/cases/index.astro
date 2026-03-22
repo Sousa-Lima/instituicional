@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
+import CasesListClient from '../../components/CasesListClient.tsx';
 import { fetchCasesListSafe } from '../../lib/api-build';
 
 const cases = await fetchCasesListSafe();
@@ -16,15 +17,12 @@ const cases = await fetchCasesListSafe();
 		<div class="mx-auto w-full max-w-5xl">
 			<h1 class="font-display text-4xl font-bold text-slc-navy">Cases</h1>
 			<p class="mt-4 max-w-2xl text-slc-text-muted">
-				Seleção de trabalhos publicados. Conteúdo carregado da API no tempo de build.
+				Seleção de trabalhos publicados. Dados da API (SSG ou carregados no browser).
 			</p>
 
 			{
 				cases.length === 0 ? (
-					<p class="mt-12 rounded-xl border border-dashed border-slc-grey/30 bg-slc-bg p-8 text-center text-slc-text-muted">
-						Nenhum case disponível. Configure <code class="font-mono text-sm">PUBLIC_API_BASE_URL</code> e{' '}
-						<code class="font-mono text-sm">API_READ_TOKEN</code> no ambiente de build.
-					</p>
+					<CasesListClient client:visible />
 				) : (
 					<ul class="mt-12 grid gap-6 md:grid-cols-2">
 						{cases.map((c) => (

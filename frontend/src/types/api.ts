@@ -23,6 +23,11 @@ export interface CaseStudyResource {
 	short_summary: string | null;
 	content_html: string | null;
 	metrics: unknown;
-	main_image: string | null;
+	main_image: {
+		url: string;
+		alt?: string;
+		width?: number;
+		height?: number;
+	} | null;
 	seo: Record<string, unknown> | null;
 }

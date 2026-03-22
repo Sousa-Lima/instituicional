@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
+import ServicesListClient from '../../components/ServicesListClient.tsx';
 import { fetchServicesListSafe } from '../../lib/api-build';
 
 const services = await fetchServicesListSafe();
@@ -16,16 +17,13 @@ const services = await fetchServicesListSafe();
 		<div class="mx-auto w-full max-w-5xl">
 			<h1 class="font-display text-4xl font-bold text-slc-navy">Serviços</h1>
 			<p class="mt-4 max-w-2xl text-slc-text-muted">
-				Explore as linhas de atuação da SLC. Os textos completos vêm da API no build — se a API não estiver
-				disponível no momento do build, esta lista pode aparecer vazia.
+				Explore as linhas de atuação da SLC. Os dados vêm da API (no build ou carregados no browser se o build não
+				tiver alcançado a API).
 			</p>
 
 			{
 				services.length === 0 ? (
-					<p class="mt-12 rounded-xl border border-dashed border-slc-grey/30 bg-slc-bg p-8 text-center text-slc-text-muted">
-						Nenhum serviço disponível. Configure o build com <code class="font-mono text-sm">PUBLIC_API_BASE_URL</code>{' '}
-						e <code class="font-mono text-sm">API_READ_TOKEN</code> para gerar esta página a partir da API.
-					</p>
+					<ServicesListClient client:visible />
 				) : (
 					<ul class="mt-12 grid gap-6 md:grid-cols-2">
 						{services.map((s) => (

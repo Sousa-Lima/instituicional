@@ -2,48 +2,68 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
-import { fetchServicesListSafe } from '../../lib/api-build';
+import ServiceDetailClient from '../../components/ServiceDetailClient.tsx';
+import { fetchServicesListSafe, parseSlugEnvList } from '../../lib/api-build';
+import { FALLBACK_SERVICE_SLUGS } from '../../lib/fallback-build-slugs';
 import type { ServiceResource } from '../../types/api';
 
 export async function getStaticPaths() {
 	const list = await fetchServicesListSafe();
-	return list.map((s: ServiceResource) => ({
-		params: { slug: s.slug },
-		props: { service: s },
+	if (list.length > 0) {
+		return list.map((s: ServiceResource) => ({
+			params: { slug: s.slug },
+			props: { service: s },
+		}));
+	}
+	const fromEnv = parseSlugEnvList(process.env.BUILD_SLUGS_SERVICES);
+	const slugs = fromEnv.length > 0 ? fromEnv : [...FALLBACK_SERVICE_SLUGS];
+	return slugs.map((slug) => ({
+		params: { slug },
+		props: { service: null },
 	}));
 }
 
 interface Props {
-	service: ServiceResource;
+	service: ServiceResource | null;
 }
 
 const { service } = Astro.props;
-const title = `${service.title} — Serviços | Sousa Lima Consultoria`;
-const desc = service.short_description ?? service.title;
+const slug = Astro.params.slug!;
+
+const title = service
+	? `${service.title} — Serviços | Sousa Lima Consultoria`
+	: 'Serviços — Sousa Lima Consultoria';
+const desc = service ? (service.short_description ?? service.title) : 'Conteúdo do serviço.';
 ---
 
 <BaseLayout title={title} description={desc}>
 	<SiteHeader currentPath={Astro.url.pathname} />
 	<main id="conteudo-principal" tabindex="-1" class="flex flex-1 flex-col px-4 py-16">
 		<article class="mx-auto w-full max-w-3xl">
-			<p class="text-sm font-medium uppercase tracking-wider text-slc-navy">Serviço</p>
-			<h1 class="font-display mt-2 text-4xl font-bold text-slc-navy">{service.title}</h1>
 			{
-				service.short_description && (
-					<p class="mt-4 text-lg text-slc-text-muted">{service.short_description}</p>
+				service ? (
+					<>
+						<p class="text-sm font-medium uppercase tracking-wider text-slc-navy">Serviço</p>
+						<h1 class="font-display mt-2 text-4xl font-bold text-slc-navy">{service.title}</h1>
+						{service.short_description && (
+							<p class="mt-4 text-lg text-slc-text-muted">{service.short_description}</p>
+						)}
+						{service.content_html && (
+							<div
+								class="slc-content mt-10 max-w-none text-slc-text [&_a]:text-slc-purple [&_a]:underline [&_h2]:mt-8 [&_h2]:font-display [&_h2]:text-2xl [&_h3]:mt-6 [&_p]:leading-relaxed"
+								set:html={service.content_html}
+							/>
+						)}
+						<p class="mt-12">
+							<a href="/servicos" class="text-sm font-medium text-slc-purple hover:text-slc-navy">
+								← Todos os serviços
+							</a>
+						</p>
+					</>
+				) : (
+					<ServiceDetailClient client:load slug={slug} />
 				)
 			}
-			{
-				service.content_html && (
-					<div
-						class="slc-content mt-10 max-w-none text-slc-text [&_a]:text-slc-purple [&_a]:underline [&_h2]:mt-8 [&_h2]:font-display [&_h2]:text-2xl [&_h3]:mt-6 [&_p]:leading-relaxed"
-						set:html={service.content_html}
-					/>
-				)
-			}
-			<p class="mt-12">
-				<a href="/servicos" class="text-sm font-medium text-slc-purple hover:text-slc-navy">← Todos os serviços</a>
-			</p>
 		</article>
 	</main>
 	<SiteFooter />
