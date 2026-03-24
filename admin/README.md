@@ -72,3 +72,32 @@ Este diretório é o **backend Laravel** do ecossistema SLC (API, painel futuro,
 ### Credenciais e produção
 
 Variáveis sensíveis (`APP_KEY`, base de dados, mail, etc.) são definidas no ambiente ou em **secrets** Swarm em produção; gerar `APP_KEY` com `php artisan key:generate` quando for preparar o deploy (ver guia acima).
+
+### Painel visual (Filament)
+
+- Painel administrativo em **`/admin`**.
+- Stack do painel: **Filament** (sobre Laravel, com guard `web`).
+- Recursos atuais no painel: **Services**, **Case Studies** e **Leads**.
+
+#### Setup rápido
+
+```bash
+composer install
+php artisan filament:install
+php artisan migrate
+php artisan db:seed
+php artisan serve
+```
+
+#### Controle de acesso
+
+- Definir `FILAMENT_ADMIN_EMAILS` no ambiente (lista separada por vírgula).
+- Apenas utilizadores com e-mail nesta whitelist podem aceder ao painel.
+- Em `local`, se `FILAMENT_ADMIN_EMAILS` estiver vazio, o acesso é liberado para acelerar desenvolvimento.
+
+#### Próximos passos operacionais
+
+1. Fechar workflow de publicação no painel (status `draft/published` + webhook para rebuild do frontend).
+2. Refinar validações/sanitização de `content_html` no fluxo de criação/edição.
+3. Adicionar política de permissões por perfil (ex.: editor vs admin).
+4. Incluir testes de regressão do painel no CI do repositório admin.

@@ -2,7 +2,7 @@
 
 **Objetivo:** site institucional com **excelente performance** (meta: pontuações altas no [PageSpeed Insights](https://pagespeed.web.dev/)), unindo **conversão** (referência [Sagitta Digital](https://sagittadigital.com.br/)) e **autoridade** (referência [Venturus](https://www.venturus.org.br/)).
 
-**Arquitetura de código:** **dois repositórios** — frontend (este escopo: **Astro**) e **admin** (**Laravel** + Inertia + React); não monorepo — ver [stack-tecnico-slc.md](../definicoes/stack-tecnico-slc.md). Este documento foca no **site (frontend)** e na **API do admin** consumida no **build**; **área do cliente** é **posterior**.
+**Arquitetura de código:** **dois repositórios** — frontend (este escopo: **Astro**) e **admin** (**Laravel** + **Filament**); não monorepo — ver [stack-tecnico-slc.md](../definicoes/stack-tecnico-slc.md). Este documento foca no **site (frontend)** e na **API do admin** consumida no **build**; **área do cliente** é **posterior**.
 
 Documentos relacionados: [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md), [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md), [referencia-layout-sites.md](referencia-layout-sites.md), [conteudo-mensagens-referencia.md](conteudo-mensagens-referencia.md), [qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md), [diretrizes-qualidade-site-slc.md](../definicoes/diretrizes-qualidade-site-slc.md), [tokens-animacao-framer-slc.md](../definicoes/tokens-animacao-framer-slc.md), [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md), [paleta-cores.md](../definicoes/paleta-cores.md), [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md).
 
@@ -39,7 +39,7 @@ Alinhado a [qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vital
 | **API — conteúdo institucional** | Blog, serviços e páginas estáticas: dados obtidos com **`fetch` no frontmatter** **no build** (SSG); descoberta de rotas (`/api/v1/content/slugs`), contratos TS, imagens com dimensões, Bearer de leitura — ver [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md). |
 | **Atualização após mudanças no CMS** | **Job** + **webhook** de publicação para o CI do frontend — [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md), [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md). |
 | **Auth — área do cliente** | **Fora do escopo imediato**; quando existir, JWT/cookies HttpOnly conforme [stack-tecnico-slc.md](../definicoes/stack-tecnico-slc.md). |
-| **Dados no cliente** | Onde houver ilhas React no Astro, **TanStack Query** pode gerenciar cache e chamadas à API; no **repo admin (Laravel)**, o fluxo padrão é **Inertia + React** (sem Next.js). |
+| **Dados no cliente** | Onde houver ilhas React no Astro, **TanStack Query** pode gerenciar cache e chamadas à API; no **repo admin (Laravel)**, o fluxo padrão do painel é **Filament**. |
 | **Segurança** | Build: **Bearer** `API_READ_TOKEN` para API de conteúdo; sanitização de HTML no Laravel; CSP — [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md), [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md). Cookies **HttpOnly** quando houver sessão no admin. |
 
 ---

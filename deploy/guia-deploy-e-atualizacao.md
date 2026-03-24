@@ -39,7 +39,6 @@ Executar no **nó** onde os bind mounts existem (e em todos os nós se houver r�
 
 ```bash
 sudo mkdir -p /srv/sistemas/slc/data/storage/app/public \
-             /srv/sistemas/slc/data/frontend/dist \
              /srv/sistemas/slc/data/postgres \
              /srv/sistemas/slc/data/redis
 
@@ -188,13 +187,26 @@ O Swarm faz **rolling update** dos serviços afetados; não é obrigatório remo
 
 ### Atualizar o **site estático** (Astro)
 
-Copiar o build para o caminho do bind mount (o nginx `frontend` lê daí):
+O stack monta **`/srv/sistemas/slc/frontend/dist`** (relativo ao clone do repositório). No servidor:
 
 ```bash
-rsync -avz --delete ./dist/ servidor:/srv/sistemas/slc/data/frontend/dist/
+cd /srv/sistemas/slc
+./deploy/republish-frontend.sh
+# com reinício opcional do serviço nginx (útil se o bind mount não for detetado de imediato):
+# ./deploy/republish-frontend.sh --force-service
 ```
 
-Não precisa de `docker stack deploy` só por causa do HTML, a menos que mudes o YAML.
+Equivalente manual:
+
+```bash
+cd /srv/sistemas/slc/frontend
+./scripts/docker-node.sh run build
+# ou: npm run build (com Node local)
+```
+
+Não é preciso copiar para `data/`. Se o build for feito **outra máquina**, fazer `rsync` de `./dist/` para `servidor:/srv/sistemas/slc/frontend/dist/`.
+
+`docker stack deploy` só é necessário se alterares o `slc.yaml` (caminho, imagem, etc.).
 
 ---
 

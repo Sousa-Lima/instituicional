@@ -2,9 +2,11 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CaseStudyController;
+use App\Http\Controllers\Api\V1\CaseStudyManageController;
 use App\Http\Controllers\Api\V1\ContentSlugController;
 use App\Http\Controllers\Api\V1\LeadContactController;
 use App\Http\Controllers\Api\V1\ServiceController;
+use App\Http\Controllers\Api\V1\ServiceManageController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -15,6 +17,20 @@ Route::prefix('v1')->group(function () {
         Route::get('auth/me', [AuthController::class, 'me'])->middleware('throttle:60,1');
         Route::post('auth/logout', [AuthController::class, 'logout'])->middleware('throttle:60,1');
         Route::get('leads', [LeadContactController::class, 'index'])->middleware('throttle:60,1');
+
+        Route::prefix('admin')->middleware('throttle:60,1')->group(function () {
+            Route::get('services', [ServiceManageController::class, 'index']);
+            Route::post('services', [ServiceManageController::class, 'store']);
+            Route::get('services/{id}', [ServiceManageController::class, 'show'])->whereUuid('id');
+            Route::put('services/{id}', [ServiceManageController::class, 'update'])->whereUuid('id');
+            Route::delete('services/{id}', [ServiceManageController::class, 'destroy'])->whereUuid('id');
+
+            Route::get('cases', [CaseStudyManageController::class, 'index']);
+            Route::post('cases', [CaseStudyManageController::class, 'store']);
+            Route::get('cases/{id}', [CaseStudyManageController::class, 'show'])->whereUuid('id');
+            Route::put('cases/{id}', [CaseStudyManageController::class, 'update'])->whereUuid('id');
+            Route::delete('cases/{id}', [CaseStudyManageController::class, 'destroy'])->whereUuid('id');
+        });
     });
 
     Route::middleware(['api.public', 'throttle:120,1'])->group(function () {

@@ -1,13 +1,11 @@
 {
-  "folders": [
-    {
-      "name": "slc",
-      "path": "."
-    },
-    {
-      "name": "igrejareformada",
-      "path": "../igrejareformada"
-    }
-  ],
-  "settings": {}
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../swarm"
+		}
+	],
+	"settings": {}
 }

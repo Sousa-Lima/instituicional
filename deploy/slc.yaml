@@ -15,9 +15,9 @@
 # Dados persistentes no HOST (bind mounts), não em volumes Docker nomeados.
 # Criar no servidor (antes do primeiro deploy):
 #   mkdir -p /srv/sistemas/slc/data/storage/app/public \
-#            /srv/sistemas/slc/data/frontend/dist \
 #            /srv/sistemas/slc/data/postgres \
 #            /srv/sistemas/slc/data/redis
+# Site estático: o serviço `frontend` monta frontend/dist (gerar com npm run build em frontend/).
 #   chown -R <uid-php>:<gid-php> /srv/sistemas/slc/data/storage
 #   chown -R 70:70 /srv/sistemas/slc/data/postgres    # postgres:16-alpine (uid=70)
 #   chown -R 999:1000 /srv/sistemas/slc/data/redis     # redis:7-alpine (uid=999)
@@ -177,12 +177,16 @@ services:
       - traefik-public
     volumes:
       - type: bind
-        source: /srv/sistemas/slc/data/frontend/dist
+        source: /srv/sistemas/slc/frontend/dist
         target: /usr/share/nginx/html
+        read_only: true
+      - type: bind
+        source: /srv/sistemas/slc/deploy/nginx/frontend-site.conf
+        target: /etc/nginx/conf.d/default.conf
         read_only: true
     healthcheck: *healthcheck-nginx
     deploy:
-      replicas: 1
+      replicas: 3
       labels:
         - "traefik.enable=true"
         - "traefik.swarm.network=traefik-public"

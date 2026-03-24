@@ -13,7 +13,7 @@ Com **Astro em SSG**, o build precisa da **estrutura exata** dos dados para gera
 | Frente | Benefício |
 |--------|-----------|
 | **Frontend (Astro)** | Componentes com **mocks** que seguem o contrato; depois, troca por `fetch` no build sem redesenhar o modelo mental. |
-| **Backend (Laravel + Inertia)** | Formulários do painel (**Novo case**, etc.) com **campos alinhados** ao que o site consome. |
+| **Backend (Laravel + Filament)** | Formulários do painel (**Novo case**, etc.) com **campos alinhados** ao que o site consome. |
 | **CI/CD + webhook** | Validação de **campos obrigatórios** antes de publicar; reduz build quebrando no Swarm por dado incompleto. |
 
 O desenvolvimento pode ser **paralelo**, mas o **contrato é a âncora** comum.

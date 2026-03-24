@@ -10,7 +10,7 @@ Atualizado conforme decisões de produto e stack. Referências: [mapa-site-mvp-s
 |------|---------|
 | **Conteúdo / jurídico** | Primeira versão guiada pelos **perfis** da tabela *Referências* em [referencia-layout-sites.md](referencia-layout-sites.md); textos finais e políticas com revisão legal. Detalhe em [conteudo-juridico-semente.md](../definicoes/conteudo-juridico-semente.md). |
 | **Logo** | Arquivo oficial (SEO): `docs/sousa-lima-consultoria-logo-horizontal-colorido.png`. |
-| **Código** | **Dois repositórios distintos** (não monorepo): **frontend** = site Astro + Tailwind; **admin** = Laravel + **Inertia** + **React** + Tailwind — ver [stack-tecnico-slc.md](../definicoes/stack-tecnico-slc.md). |
+| **Código** | **Dois repositórios distintos** (não monorepo): **frontend** = site Astro + Tailwind; **admin** = Laravel + **Filament** + Tailwind — ver [stack-tecnico-slc.md](../definicoes/stack-tecnico-slc.md). |
 | **Produto** | **Área do cliente** fica **para depois**. |
 | **Infra (agora)** | Foco em **publicar com Docker Swarm** ([base-publicacao.md](base-publicacao.md)). |
 | **Compliance** | Consentimento com **implementação técnica** (gate de scripts), não só texto — [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md). |
@@ -30,7 +30,7 @@ Atualizado conforme decisões de produto e stack. Referências: [mapa-site-mvp-s
 | **1. Conteúdo + compliance** | [Mapa MVP](mapa-site-mvp-slc.md) como base; copy v1, políticas; **banner/categorias** de cookies implementáveis | LGPD exige técnica + jurídico |
 | **2. Design** | UI (Bento + glass + [paleta](../definicoes/paleta-cores.md)); validar **contraste AA** com glass | Ver checklist qualidade |
 | **3. Institucional Astro** | SSG, `fetch` no **build**, contrato de API, **webhook/CI** para rebuild ao mudar CMS | Ver [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md) |
-| **4. Admin Laravel** | Repositório separado: API + painel Inertia; consumido pelo build do **outro** repo (Astro) | Paralelo ou após MVP do site |
+| **4. Admin Laravel** | Repositório separado: API + painel **Filament**; consumido pelo build do **outro** repo (Astro) | Paralelo ou após MVP do site |
 | **5. Qualidade** | PSI, WCAG, JSON-LD, assets | Checklist abaixo |
 | **6. Go-live Swarm** | Stack, TLS, DNS, **healthcheck**, secrets | [dominios-e-ambiente.md](../definicoes/dominios-e-ambiente.md) |
 
@@ -44,9 +44,9 @@ Atualizado conforme decisões de produto e stack. Referências: [mapa-site-mvp-s
 
 ---
 
-## Stack Laravel + Inertia — validação
+## Stack Laravel + Filament — validação
 
-- Padrão: **Laravel + Inertia + React** (ou Vue). **Inertia** substitui a necessidade de **Next.js** para o mesmo conjunto de rotas servidas pelo Laravel.
+- Padrão definido: **Laravel + Filament** para o painel admin (conteúdo e operação), com API versionada para consumo do frontend Astro.
 - **Next.js** só faria sentido como **aplicação separada** (micro-serviço), integrada por API — não documentado como padrão SLC.
 
 ---
@@ -67,9 +67,11 @@ Atualizado conforme decisões de produto e stack. Referências: [mapa-site-mvp-s
 ### Código
 
 - [ ] **Repositório frontend (site):** Astro + Tailwind; CI próprio (build, artefato estático).
-- [ ] **Repositório admin:** Laravel + Inertia + React; API e painel; CI próprio (testes, deploy).
+- [x] **Repositório admin:** Laravel + Filament; API e painel base em `/admin`; CI próprio (testes, deploy).
 - [ ] **Contrato de API** implementado conforme [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md) (slugs, interfaces TS, imagens com `width`/`height`, `API_READ_TOKEN`, payload do webhook; leads em [formulario-contato-lead-slc.md](formulario-contato-lead-slc.md) / §6).
 - [ ] **Webhook / dispatch** do admin para acionar **pipeline do frontend** quando conteúdo mudar ([integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md)).
+- [ ] **Painel Filament:** publicar assets e executar migrations do painel em todos os ambientes (`php artisan filament:install`, `php artisan migrate`).
+- [ ] **Acesso admin:** definir `FILAMENT_ADMIN_EMAILS` e processo de onboarding/rotação de utilizadores.
 - [ ] **Otimização de assets:** uso do **`<Image />` do Astro** para logo e imagens (WebP/AVIF, dimensões) — metas PSI ([projeto-astro-laravel-institutional.md](projeto-astro-laravel-institutional.md)).
 - [ ] Implementação e testes de performance (PSI).
 
@@ -98,6 +100,6 @@ Atualizado conforme decisões de produto e stack. Referências: [mapa-site-mvp-s
 
 ## Próximo passo recomendado
 
-(1) [guia-copy-juridico-lgpd-slc.md](guia-copy-juridico-lgpd-slc.md) — copy final + jurídico + banner/gate de cookies; (2) **dois repositórios** (frontend + admin), contrato de API e **webhook**; (3) CI em cada repo; (4) após deploy, PSI/WCAG/JSON-LD com medição e iteração.
+(1) [guia-copy-juridico-lgpd-slc.md](guia-copy-juridico-lgpd-slc.md) — copy final + jurídico + banner/gate de cookies; (2) consolidar painel **Filament** (acessos, resources, webhook de publicação); (3) CI em cada repo; (4) após deploy, PSI/WCAG/JSON-LD com medição e iteração.
 
 Atualize os checklists quando itens forem concluídos.

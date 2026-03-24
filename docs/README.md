@@ -21,7 +21,7 @@ Base de documentação interna para evoluir até a publicação do site e dos se
 | [conhecimento/projeto-astro-laravel-institutional.md](conhecimento/projeto-astro-laravel-institutional.md) | Stack Astro + Laravel 12: frontend, Core Web Vitals, API, JWT, SEO, WCAG, clean code. |
 | [definicoes/dominios-e-ambiente.md](definicoes/dominios-e-ambiente.md) | Marca, domínio canónico (apex), `www`→301, ambientes e variáveis em nível conceitual. |
 | [conhecimento/guia-copy-juridico-lgpd-slc.md](conhecimento/guia-copy-juridico-lgpd-slc.md) | Copy, jurídico (políticas/termos) e cookies LGPD (gate de scripts, checklist). |
-| [definicoes/stack-tecnico-slc.md](definicoes/stack-tecnico-slc.md) | Dois repos: frontend (Astro + Tailwind) e admin (Laravel + Inertia + React). |
+| [definicoes/stack-tecnico-slc.md](definicoes/stack-tecnico-slc.md) | Dois repos: frontend (Astro + Tailwind) e admin (Laravel + Filament). |
 | [conhecimento/integracao-astro-ssg-laravel.md](conhecimento/integracao-astro-ssg-laravel.md) | SSG: API só no build; webhook/rebuild; risco de conteúdo defasado. |
 | [conhecimento/contrato-api-build-time-slc.md](conhecimento/contrato-api-build-time-slc.md) | Contrato primeiro; slugs; Services + Cases (`GET /api/v1/cases`); LCP/CLS; webhook; Bearer; CSP; leads `POST /api/v1/lead/contact` (§6). |
 | [conhecimento/formulario-contato-lead-slc.md](conhecimento/formulario-contato-lead-slc.md) | Formulário segmentado B2B (ilha Astro); `POST /api/v1/lead/contact`; WCAG, LGPD, CSRF, reCAPTCHA; INP &lt; 100 ms. |

@@ -62,7 +62,6 @@ Bind mounts — **não** usar volumes nomeados Docker para estes dados. Criar no
 
 ```bash
 sudo mkdir -p /srv/sistemas/slc/data/storage/app/public
-sudo mkdir -p /srv/sistemas/slc/data/frontend/dist
 sudo mkdir -p /srv/sistemas/slc/data/postgres
 sudo mkdir -p /srv/sistemas/slc/data/redis
 ```
@@ -76,7 +75,7 @@ sudo chown -R 70:70 /srv/sistemas/slc/data/postgres    # postgres:16-alpine
 sudo chown -R 999:1000 /srv/sistemas/slc/data/redis    # redis:7-alpine
 ```
 
-O diretório `frontend/dist` pode ser propriedade de root ou do utilizador de deploy, desde que o contentor nginx consiga ler (normalmente modo `read_only: true` e `755`/`644`).
+O diretório **`frontend/dist`** (na raiz do clone, gerado pelo build Astro) pode ser propriedade de root ou do utilizador de deploy, desde que o contentor nginx consiga ler (`read_only: true`, ficheiros `644` / pastas `755`).
 
 **PostgreSQL:** o diretório `data/postgres` tem de estar **vazio** na primeira subida (ou já conter um cluster inicializado por esta mesma versão major). Não apagar em produção sem backup.
 
@@ -143,18 +142,18 @@ Fluxo típico:
 
 O frontend não embute o build na imagem nginx: o conteúdo vem de:
 
-`/srv/sistemas/slc/data/frontend/dist`
+`/srv/sistemas/slc/frontend/dist`
 
-1. No repositório **frontend (Astro)**, com variáveis de ambiente do build (URL da API, token de leitura se aplicável — ver [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md)):
+1. No repositório **frontend (Astro)** no servidor (ou em CI), com variáveis de ambiente do build (URL da API, token de leitura se aplicável — ver [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md)):
 
    ```bash
    npm ci && npm run build
    ```
 
-2. Copiar o conteúdo de `dist/` (ou o diretório de output configurado no `astro.config`) para o servidor:
+2. Se o build for **fora** do servidor, copiar `dist/` para o mesmo caminho no host:
 
    ```bash
-   rsync -avz --delete ./dist/ servidor:/srv/sistemas/slc/data/frontend/dist/
+   rsync -avz --delete ./dist/ servidor:/srv/sistemas/slc/frontend/dist/
    ```
 
 3. **Webhook / CI:** após publicar conteúdo no Laravel, o rebuild pode ser automático — [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md).
@@ -225,7 +224,7 @@ Os bind mounts apontam para caminhos **locais do nó**. Se `frontend`, `app` ou 
 ## 9. Rollback
 
 - **Stack:** voltar a uma versão anterior do ficheiro `deploy/slc.yaml` (ou imagem com tag anterior) e repetir `docker stack deploy`.
-- **Frontend:** restaurar cópia anterior de `data/frontend/dist` a partir de backup.
+- **Frontend:** restaurar cópia anterior de `frontend/dist` a partir de backup.
 - **Base de dados:** política de backup/restauro fora do âmbito deste runbook (definir em [base-publicacao.md](base-publicacao.md) / operações).
 
 ---

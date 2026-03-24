@@ -2,10 +2,10 @@
 # Extensão: https://marketplace.visualstudio.com/items?itemName=humao.rest-client
 #
 # 1. Ajuste @baseUrl; opcionalmente @apiReadToken (build CI) para rotas "públicas".
-# 2. Corra "Login (JWT)" para usar {{login.response.body.access_token}} em me/logout e também em conteúdo/lead.
+# 2. Corra "Login (JWT)" para usar {{login.response.body.access_token}} em me, logout, GET /leads e (opcional) conteúdo/lead.
 # 3. Utilizador de teste (após db:seed): test@example.com / password
 #
-# Regras: auth/me e logout → só JWT. Conteúdo + lead → JWT OU API_READ_TOKEN (Bearer).
+# Regras: me, logout, GET /leads → só JWT. Conteúdo + POST lead → JWT OU API_READ_TOKEN (Bearer).
 
 # Laravel: php artisan serve → http://127.0.0.1:8000
 @baseUrl = https://api.sousalimaconsultoria.com.br
@@ -97,6 +97,68 @@ Accept: application/json
 GET {{baseUrl}}/api/v1/services/consultoria-processos
 Authorization: Bearer {{login.response.body.access_token}}
 Accept: application/json
+
+############################################
+# Gestão de conteúdo (admin) — só JWT
+############################################
+
+### Admin Services — lista (all|draft|published)
+GET {{baseUrl}}/api/v1/admin/services?status=all
+Authorization: Bearer {{login.response.body.access_token}}
+Accept: application/json
+
+### Admin Services — criar (slug opcional: auto a partir do título)
+POST {{baseUrl}}/api/v1/admin/services
+Authorization: Bearer {{login.response.body.access_token}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Consultoria de Processos",
+  "short_description": "Mapeamento, diagnóstico e plano de eficiência operacional.",
+  "content_html": "<p>Conteúdo do serviço...</p>",
+  "icon_name": "workflow",
+  "category": "consultoria",
+  "seo": {
+    "title": "Consultoria de Processos | SLC",
+    "description": "Melhoria contínua e eficiência operacional."
+  },
+  "order": 10,
+  "status": "draft"
+}
+
+### Admin Cases — lista (all|draft|published)
+GET {{baseUrl}}/api/v1/admin/cases?status=all
+Authorization: Bearer {{login.response.body.access_token}}
+Accept: application/json
+
+### Admin Cases — criar (slug opcional: auto a partir do título)
+POST {{baseUrl}}/api/v1/admin/cases
+Authorization: Bearer {{login.response.body.access_token}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "status": "draft",
+  "featured": false,
+  "title": "Modernização da Operação Logística",
+  "customer_name": "Cliente Exemplo S/A",
+  "sector": "Logística",
+  "short_summary": "Projeto com redução de custos e ganho de throughput.",
+  "content_html": "<p>Detalhamento do case...</p>",
+  "metrics": {
+    "cost_reduction": "18%",
+    "delivery_time": "-22%"
+  },
+  "main_image": {
+    "url": "https://static.sousalimaconsultoria.com.br/cases/case-01.jpg",
+    "alt": "Equipe em operação logística"
+  },
+  "seo": {
+    "title": "Case Logística | SLC",
+    "description": "Como reduzimos custos e aceleramos entregas."
+  }
+}
 
 ############################################
 # Lead — JWT ou API_READ_TOKEN
