@@ -3,9 +3,9 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -48,15 +48,15 @@ class User extends Authenticatable implements FilamentUser, JWTSubject
 
     public function canAccessPanel(Panel $panel): bool
     {
-        $emails = array_filter(array_map(
-            static fn (string $email): string => mb_strtolower(trim($email)),
-            explode(',', (string) env('FILAMENT_ADMIN_EMAILS', ''))
-        ));
+        $allowedEmails = collect(explode(',', (string) env('FILAMENT_ADMIN_EMAILS', '')))
+            ->map(static fn (string $email): string => mb_strtolower(trim($email)))
+            ->filter()
+            ->values();
 
-        if (app()->isLocal() && count($emails) === 0) {
+        if (app()->isLocal() && $allowedEmails->isEmpty()) {
             return true;
         }
 
-        return in_array(mb_strtolower((string) $this->email), $emails, true);
+        return $allowedEmails->contains(mb_strtolower((string) $this->email));
     }
 }

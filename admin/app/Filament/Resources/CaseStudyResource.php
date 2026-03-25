@@ -5,8 +5,8 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\CaseStudyResource\Pages;
 use App\Models\CaseStudy;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -14,16 +14,22 @@ class CaseStudyResource extends Resource
 {
     protected static ?string $model = CaseStudy::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
-
-    protected static ?string $navigationGroup = 'Conteúdo';
-
     protected static ?int $navigationSort = 20;
 
-    public static function form(Form $form): Form
+    public static function getNavigationIcon(): string|\BackedEnum|null
     {
-        return $form
-            ->schema([
+        return 'heroicon-o-building-office-2';
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Conteúdo';
+    }
+
+    public static function form(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
                 Forms\Components\TextInput::make('title')
                     ->required()
                     ->maxLength(255),

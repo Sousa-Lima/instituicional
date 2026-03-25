@@ -5,8 +5,8 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\LeadResource\Pages;
 use App\Models\Lead;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -14,16 +14,22 @@ class LeadResource extends Resource
 {
     protected static ?string $model = Lead::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-inbox-stack';
-
-    protected static ?string $navigationGroup = 'Operação';
-
     protected static ?int $navigationSort = 30;
 
-    public static function form(Form $form): Form
+    public static function getNavigationIcon(): string|\BackedEnum|null
     {
-        return $form
-            ->schema([
+        return 'heroicon-o-inbox-stack';
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Operação';
+    }
+
+    public static function form(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
                 Forms\Components\TextInput::make('name')->disabled(),
                 Forms\Components\TextInput::make('email')->disabled(),
                 Forms\Components\TextInput::make('company')->disabled(),
