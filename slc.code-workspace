@@ -7,5 +7,15 @@
 			"path": "../../swarm"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"chat.tools.terminal.autoApprove": {
+			"docker exec": true,
+			"docker service": true,
+			"awk": true,
+			"/^cd /srv/sistemas/slc/admin && php -l app/Http/Middleware/AdminRequestDebug\\.php && php -l app/Providers/Filament/AdminPanelProvider\\.php && php -l bootstrap/app\\.php$/": {
+				"approve": true,
+				"matchCommandLine": true
+			}
+		}
+	}
 }

@@ -78,6 +78,8 @@ x-app-defaults: &app-defaults
     MAIL_PASSWORD_FILE: /run/secrets/slc_sousalima_smtp_password
     MAIL_FROM_ADDRESS: noreply@sousalimaconsultoria.com.br
     MAIL_FROM_NAME: "Sousa Lima Consultoria"
+    FILAMENT_ADMIN_EMAILS: "admin@sousalimaconsultoria.com.br,eolimabr@gmail.com"
+    SESSION_SECURE_COOKIE: "true"
   secrets:
     - source: slc_sousalima_db_password
       target: /run/secrets/slc_sousalima_db_password

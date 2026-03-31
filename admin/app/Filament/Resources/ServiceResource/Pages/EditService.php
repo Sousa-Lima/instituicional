@@ -13,6 +13,12 @@ class EditService extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('openPublicPage')
+                ->label('Abrir no site')
+                ->icon('heroicon-o-arrow-top-right-on-square')
+                ->url(fn (): string => rtrim((string) config('app.frontend_url'), '/').'/servicos/'.$this->getRecord()->slug)
+                ->openUrlInNewTab()
+                ->visible(fn (): bool => filled($this->getRecord()->slug)),
             Actions\DeleteAction::make(),
         ];
     }
