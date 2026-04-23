@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>calculo-volume | Interface Grafica</title>
+    <style>
+      :root {
+        --bg: #f4f1ea;
+        --panel: #fffaf0;
+        --ink: #1f2933;
+        --line: #c7b99f;
+        --wood: #2f9e44;
+        --hole: #b02a37;
+        --accent: #0c6b58;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: radial-gradient(circle at 15% 20%, #f9f4e8, #ece3d3 52%, #e2d6c1);
+        color: var(--ink);
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      .app {
+        max-width: 1280px;
+        margin: 24px auto;
+        padding: 0 16px 24px;
+        display: grid;
+        grid-template-columns: 340px 1fr;
+        gap: 16px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 14px;
+        box-shadow: 0 8px 20px rgba(40, 25, 10, 0.08);
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-size: 1.15rem;
+      }
+
+      .group {
+        margin-bottom: 12px;
+      }
+
+      .group label {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 0.92rem;
+      }
+
+      .group input,
+      .group button,
+      .group select {
+        width: 100%;
+        border: 1px solid #bcae95;
+        border-radius: 8px;
+        padding: 8px 10px;
+        background: #fff;
+      }
+
+      .inline {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .tools {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+      }
+
+      .mode-tools {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .contour-tools {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      button {
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      button.primary {
+        background: var(--accent);
+        color: #fff;
+        border-color: #0a5a4b;
+      }
+
+      button.wood {
+        background: #eaf7ee;
+      }
+
+      button.hole {
+        background: #fdecee;
+      }
+
+      button.active {
+        outline: 2px solid #111;
+      }
+
+      .viewer {
+        position: relative;
+        min-height: 520px;
+        background: #f2ede0;
+        border: 1px dashed #b9aa8f;
+        border-radius: 14px;
+        overflow: auto;
+      }
+
+      canvas {
+        display: block;
+        max-width: 100%;
+      }
+
+      #imageCanvas {
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 1;
+      }
+
+      #paintCanvas {
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 2;
+      }
+
+      #guideCanvas {
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 3;
+        pointer-events: none;
+      }
+
+      .result {
+        margin-top: 10px;
+        background: #fff;
+        border: 1px solid #cebfa4;
+        border-radius: 10px;
+        padding: 10px;
+        white-space: pre-line;
+        min-height: 140px;
+      }
+
+      .legend {
+        display: flex;
+        gap: 10px;
+        font-size: 0.85rem;
+      }
+
+      .dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .dot.wood {
+        background: var(--wood);
+      }
+
+      .dot.hole {
+        background: var(--hole);
+      }
+
+      @media (max-width: 980px) {
+        .app {
+          grid-template-columns: 1fr;
+        }
+
+        .viewer {
+          min-height: 420px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <section class="panel">
+        <h1>Interface grafica de marcacao</h1>
+
+        <div class="group">
+          <label for="imageInput">Imagem do projeto</label>
+          <input id="imageInput" type="file" accept="image/png,image/jpeg,image/jpg" />
+        </div>
+
+        <div class="inline">
+          <div class="group">
+            <label for="diametro">Diametro (mm)</label>
+            <input id="diametro" type="number" value="1000" min="1" step="1" />
+          </div>
+          <div class="group">
+            <label for="altura">Altura (mm)</label>
+            <input id="altura" type="number" value="50" min="1" step="1" />
+          </div>
+        </div>
+
+        <div class="inline">
+          <div class="group">
+            <label for="fator">Fator seguranca</label>
+            <input id="fator" type="number" value="1.15" min="0.1" step="0.01" />
+          </div>
+          <div class="group">
+            <label for="densidade">Densidade (g/cm3)</label>
+            <input id="densidade" type="number" value="1.1" min="0.1" step="0.01" />
+          </div>
+        </div>
+
+        <div class="group">
+          <label for="brushSize">Tamanho do pincel</label>
+          <input id="brushSize" type="range" min="4" max="80" value="24" />
+        </div>
+
+        <div class="group">
+          <label for="radiusPct">Raio do molde (% da menor dimensao)</label>
+          <input id="radiusPct" type="range" min="20" max="49" value="45" />
+        </div>
+
+        <div class="inline">
+          <div class="group">
+            <label for="offsetX">Centro X (%)</label>
+            <input id="offsetX" type="range" min="35" max="65" value="50" />
+          </div>
+          <div class="group">
+            <label for="offsetY">Centro Y (%)</label>
+            <input id="offsetY" type="range" min="35" max="65" value="50" />
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="tools">
+            <button id="toolWood" class="wood active" type="button">Marcar madeira</button>
+            <button id="toolHole" class="hole" type="button">Marcar furos</button>
+            <button id="toolErase" type="button">Apagar</button>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="mode-tools">
+            <button id="drawBrush" class="active" type="button">Modo pincel</button>
+            <button id="drawContour" type="button">Modo contorno</button>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="contour-tools">
+            <button id="applyContour" type="button">Aplicar contorno</button>
+            <button id="clearContour" type="button">Limpar contorno</button>
+          </div>
+        </div>
+
+        <div class="legend group">
+          <span><span class="dot wood"></span> madeira</span>
+          <span><span class="dot hole"></span> furos/resina</span>
+        </div>
+
+        <div class="group">
+          <button id="clearMarks" type="button">Limpar marcacoes</button>
+        </div>
+
+        <div class="group inline">
+          <button id="downloadMask" type="button">Baixar overlay</button>
+          <button id="calculate" type="button" class="primary">Calcular</button>
+        </div>
+
+        <div class="result" id="resultBox">Carregue uma imagem para iniciar.</div>
+      </section>
+
+      <section class="panel">
+        <div class="viewer" id="viewer">
+          <canvas id="imageCanvas"></canvas>
+          <canvas id="paintCanvas"></canvas>
+          <canvas id="guideCanvas"></canvas>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const imageInput = document.getElementById("imageInput");
+      const imageCanvas = document.getElementById("imageCanvas");
+      const paintCanvas = document.getElementById("paintCanvas");
+      const guideCanvas = document.getElementById("guideCanvas");
+      const viewer = document.getElementById("viewer");
+
+      const diametroInput = document.getElementById("diametro");
+      const alturaInput = document.getElementById("altura");
+      const fatorInput = document.getElementById("fator");
+      const densidadeInput = document.getElementById("densidade");
+      const brushSizeInput = document.getElementById("brushSize");
+      const radiusPctInput = document.getElementById("radiusPct");
+      const offsetXInput = document.getElementById("offsetX");
+      const offsetYInput = document.getElementById("offsetY");
+      const resultBox = document.getElementById("resultBox");
+
+      const toolWood = document.getElementById("toolWood");
+      const toolHole = document.getElementById("toolHole");
+      const toolErase = document.getElementById("toolErase");
+      const drawBrushBtn = document.getElementById("drawBrush");
+      const drawContourBtn = document.getElementById("drawContour");
+      const applyContourBtn = document.getElementById("applyContour");
+      const clearContourBtn = document.getElementById("clearContour");
+      const clearMarksBtn = document.getElementById("clearMarks");
+      const calculateBtn = document.getElementById("calculate");
+      const downloadMaskBtn = document.getElementById("downloadMask");
+
+      const imageCtx = imageCanvas.getContext("2d");
+      const paintCtx = paintCanvas.getContext("2d");
+      const guideCtx = guideCanvas.getContext("2d");
+
+      let isDrawing = false;
+      let currentTool = "wood";
+      let currentDrawMode = "brush";
+      let hasImage = false;
+      let annotationData = null;
+      let imgWidth = 0;
+      let imgHeight = 0;
+      let contourPoints = [];
+      let contourPreviewPoint = null;
+
+      function setActiveTool(name) {
+        currentTool = name;
+        [toolWood, toolHole, toolErase].forEach((btn) => btn.classList.remove("active"));
+        if (name === "wood") toolWood.classList.add("active");
+        if (name === "hole") toolHole.classList.add("active");
+        if (name === "erase") toolErase.classList.add("active");
+      }
+
+      function setActiveDrawMode(mode) {
+        currentDrawMode = mode;
+        [drawBrushBtn, drawContourBtn].forEach((btn) => btn.classList.remove("active"));
+        if (mode === "brush") drawBrushBtn.classList.add("active");
+        if (mode === "contour") drawContourBtn.classList.add("active");
+      }
+
+      function setupCanvases(width, height) {
+        [imageCanvas, paintCanvas, guideCanvas].forEach((cv) => {
+          cv.width = width;
+          cv.height = height;
+          cv.style.width = `${width}px`;
+          cv.style.height = `${height}px`;
+        });
+
+        viewer.style.height = `${Math.max(420, Math.min(760, height + 10))}px`;
+        annotationData = new Uint8Array(width * height);
+        imgWidth = width;
+        imgHeight = height;
+        redrawGuide();
+      }
+
+      function circleParams() {
+        const radius = Math.floor((Math.min(imgWidth, imgHeight) * Number(radiusPctInput.value)) / 100);
+        const cx = Math.floor((imgWidth * Number(offsetXInput.value)) / 100);
+        const cy = Math.floor((imgHeight * Number(offsetYInput.value)) / 100);
+        return { cx, cy, radius };
+      }
+
+      function redrawGuide() {
+        if (!hasImage) return;
+        guideCtx.clearRect(0, 0, imgWidth, imgHeight);
+        const { cx, cy, radius } = circleParams();
+
+        guideCtx.strokeStyle = "#0f6a7f";
+        guideCtx.lineWidth = 3;
+        guideCtx.setLineDash([10, 7]);
+        guideCtx.beginPath();
+        guideCtx.arc(cx, cy, radius, 0, Math.PI * 2);
+        guideCtx.stroke();
+        guideCtx.setLineDash([]);
+
+        if (contourPoints.length > 0) {
+          guideCtx.lineWidth = 2;
+          guideCtx.strokeStyle = "rgba(12, 107, 88, 0.95)";
+          guideCtx.fillStyle = "rgba(12, 107, 88, 0.2)";
+
+          guideCtx.beginPath();
+          guideCtx.moveTo(contourPoints[0].x, contourPoints[0].y);
+          for (let i = 1; i < contourPoints.length; i += 1) {
+            guideCtx.lineTo(contourPoints[i].x, contourPoints[i].y);
+          }
+          if (contourPreviewPoint) {
+            guideCtx.lineTo(contourPreviewPoint.x, contourPreviewPoint.y);
+          }
+          guideCtx.stroke();
+
+          for (const p of contourPoints) {
+            guideCtx.beginPath();
+            guideCtx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+            guideCtx.fill();
+          }
+        }
+      }
+
+      function pointerPos(event) {
+        const rect = paintCanvas.getBoundingClientRect();
+        const rawX = Math.floor(((event.clientX - rect.left) / rect.width) * imgWidth);
+        const rawY = Math.floor(((event.clientY - rect.top) / rect.height) * imgHeight);
+        const x = Math.max(0, Math.min(imgWidth - 1, rawX));
+        const y = Math.max(0, Math.min(imgHeight - 1, rawY));
+        return { x, y };
+      }
+
+      function drawBrush(x, y) {
+        if (!annotationData) return;
+        const radius = Number(brushSizeInput.value);
+        const r2 = radius * radius;
+
+        const xMin = Math.max(0, x - radius);
+        const xMax = Math.min(imgWidth - 1, x + radius);
+        const yMin = Math.max(0, y - radius);
+        const yMax = Math.min(imgHeight - 1, y + radius);
+
+        let label = 0;
+        if (currentTool === "wood") label = 1;
+        if (currentTool === "hole") label = 2;
+
+        for (let yy = yMin; yy <= yMax; yy += 1) {
+          for (let xx = xMin; xx <= xMax; xx += 1) {
+            const dx = xx - x;
+            const dy = yy - y;
+            if (dx * dx + dy * dy > r2) continue;
+            annotationData[yy * imgWidth + xx] = label;
+          }
+        }
+
+        redrawPaint();
+      }
+
+      function redrawPaint() {
+        if (!annotationData) return;
+
+        const img = paintCtx.createImageData(imgWidth, imgHeight);
+        for (let i = 0; i < annotationData.length; i += 1) {
+          const value = annotationData[i];
+          const p = i * 4;
+
+          if (value === 1) {
+            img.data[p] = 47;
+            img.data[p + 1] = 158;
+            img.data[p + 2] = 68;
+            img.data[p + 3] = 130;
+          } else if (value === 2) {
+            img.data[p] = 176;
+            img.data[p + 1] = 42;
+            img.data[p + 2] = 55;
+            img.data[p + 3] = 155;
+          }
+        }
+        paintCtx.putImageData(img, 0, 0);
+      }
+
+      function applyContour() {
+        if (!annotationData) return;
+        if (contourPoints.length < 3) {
+          resultBox.textContent = "Contorno precisa de pelo menos 3 pontos.";
+          return;
+        }
+
+        let label = 0;
+        if (currentTool === "wood") label = 1;
+        if (currentTool === "hole") label = 2;
+
+        const maskCanvas = document.createElement("canvas");
+        maskCanvas.width = imgWidth;
+        maskCanvas.height = imgHeight;
+        const maskCtx = maskCanvas.getContext("2d");
+
+        maskCtx.clearRect(0, 0, imgWidth, imgHeight);
+        maskCtx.beginPath();
+        maskCtx.moveTo(contourPoints[0].x, contourPoints[0].y);
+        for (let i = 1; i < contourPoints.length; i += 1) {
+          maskCtx.lineTo(contourPoints[i].x, contourPoints[i].y);
+        }
+        maskCtx.closePath();
+        maskCtx.fillStyle = "rgba(255, 255, 255, 1)";
+        maskCtx.fill();
+
+        const mask = maskCtx.getImageData(0, 0, imgWidth, imgHeight).data;
+        for (let y = 0; y < imgHeight; y += 1) {
+          for (let x = 0; x < imgWidth; x += 1) {
+            const alpha = mask[(y * imgWidth + x) * 4 + 3];
+            if (alpha > 0) {
+              annotationData[y * imgWidth + x] = label;
+            }
+          }
+        }
+
+        contourPoints = [];
+        contourPreviewPoint = null;
+        redrawPaint();
+        redrawGuide();
+      }
+
+      function clearContourOnly() {
+        contourPoints = [];
+        contourPreviewPoint = null;
+        redrawGuide();
+      }
+
+      function clearMarks() {
+        if (!annotationData) return;
+        annotationData.fill(0);
+        clearContourOnly();
+        redrawPaint();
+      }
+
+      function computeRatios() {
+        if (!annotationData || !hasImage) {
+          throw new Error("Carregue uma imagem antes de calcular.");
+        }
+
+        const { cx, cy, radius } = circleParams();
+        const r2 = radius * radius;
+
+        let total = 0;
+        let wood = 0;
+        let hole = 0;
+
+        for (let y = 0; y < imgHeight; y += 1) {
+          for (let x = 0; x < imgWidth; x += 1) {
+            const dx = x - cx;
+            const dy = y - cy;
+            if (dx * dx + dy * dy > r2) continue;
+
+            total += 1;
+            const label = annotationData[y * imgWidth + x];
+            if (label === 1) wood += 1;
+            if (label === 2) hole += 1;
+          }
+        }
+
+        if (total === 0) throw new Error("Area de molde invalida. Ajuste raio/centro.");
+
+        const woodRatio = wood / total;
+        const holeRatio = hole / total;
+        const effectiveWood = Math.max(woodRatio - holeRatio, 0);
+
+        return {
+          woodRatio,
+          holeRatio,
+          effectiveWood,
+          resinRatio: 1 - effectiveWood,
+        };
+      }
+
+      async function calculate() {
+        try {
+          const ratios = computeRatios();
+
+          const payload = {
+            diametro_mm: Number(diametroInput.value),
+            altura_mm: Number(alturaInput.value),
+            fator_seguranca: Number(fatorInput.value),
+            densidade_resina_g_cm3: Number(densidadeInput.value),
+            proporcao_madeira: ratios.effectiveWood,
+          };
+
+          const response = await fetch("/river/calcular", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await response.json();
+          if (!response.ok) {
+            const detail = data.detail || "Falha no calculo.";
+            throw new Error(detail);
+          }
+
+          resultBox.textContent = [
+            `Madeira marcada: ${(ratios.woodRatio * 100).toFixed(2)}%`,
+            `Furos marcados: ${(ratios.holeRatio * 100).toFixed(2)}%`,
+            `Madeira efetiva: ${(ratios.effectiveWood * 100).toFixed(2)}%`,
+            `Resina estimada: ${(ratios.resinRatio * 100).toFixed(2)}%`,
+            "",
+            `Capacidade total: ${data.volume_bruto_l.toFixed(2)} L`,
+            `Resina pura: ${data.volume_resina_liq_l.toFixed(2)} L`,
+            `Total sugerido: ${data.volume_total_sugerido_l.toFixed(2)} L`,
+            `Peso estimado: ${data.peso_estimado_kg.toFixed(2)} kg`,
+            `Alertas: ${data.alertas.length ? data.alertas.join(" | ") : "nenhum"}`,
+          ].join("\n");
+        } catch (err) {
+          resultBox.textContent = `Erro: ${err.message}`;
+        }
+      }
+
+      function downloadOverlay() {
+        if (!hasImage) {
+          resultBox.textContent = "Carregue uma imagem antes de exportar.";
+          return;
+        }
+
+        const out = document.createElement("canvas");
+        out.width = imgWidth;
+        out.height = imgHeight;
+        const outCtx = out.getContext("2d");
+        outCtx.drawImage(imageCanvas, 0, 0);
+        outCtx.drawImage(paintCanvas, 0, 0);
+        outCtx.drawImage(guideCanvas, 0, 0);
+
+        const link = document.createElement("a");
+        link.href = out.toDataURL("image/png");
+        link.download = "overlay-marcacao.png";
+        link.click();
+      }
+
+      imageInput.addEventListener("change", (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const img = new Image();
+        img.onload = () => {
+          setupCanvases(img.naturalWidth, img.naturalHeight);
+          imageCtx.drawImage(img, 0, 0);
+          paintCtx.clearRect(0, 0, imgWidth, imgHeight);
+          clearContourOnly();
+          hasImage = true;
+          resultBox.textContent =
+            "Imagem carregada. Use pincel ou contorno para marcar madeira e furos.";
+        };
+        img.src = URL.createObjectURL(file);
+      });
+
+      paintCanvas.addEventListener("pointerdown", (event) => {
+        if (!hasImage) return;
+        const { x, y } = pointerPos(event);
+        if (currentDrawMode === "brush") {
+          isDrawing = true;
+          drawBrush(x, y);
+        } else {
+          const first = contourPoints[0];
+          const closeToFirst =
+            first && Math.hypot(x - first.x, y - first.y) <= 10 && contourPoints.length >= 3;
+
+          if (closeToFirst) {
+            applyContour();
+            return;
+          }
+
+          contourPoints.push({ x, y });
+          contourPreviewPoint = { x, y };
+          redrawGuide();
+        }
+      });
+
+      paintCanvas.addEventListener("pointermove", (event) => {
+        if (!isDrawing || !hasImage) return;
+        const { x, y } = pointerPos(event);
+        if (currentDrawMode === "brush") {
+          drawBrush(x, y);
+        } else {
+          contourPreviewPoint = { x, y };
+          redrawGuide();
+        }
+      });
+
+      window.addEventListener("pointerup", () => {
+        isDrawing = false;
+      });
+
+      paintCanvas.addEventListener("dblclick", () => {
+        if (currentDrawMode === "contour") {
+          applyContour();
+        }
+      });
+
+      [radiusPctInput, offsetXInput, offsetYInput].forEach((el) => {
+        el.addEventListener("input", redrawGuide);
+      });
+
+      toolWood.addEventListener("click", () => setActiveTool("wood"));
+      toolHole.addEventListener("click", () => setActiveTool("hole"));
+      toolErase.addEventListener("click", () => setActiveTool("erase"));
+      drawBrushBtn.addEventListener("click", () => setActiveDrawMode("brush"));
+      drawContourBtn.addEventListener("click", () => setActiveDrawMode("contour"));
+      applyContourBtn.addEventListener("click", applyContour);
+      clearContourBtn.addEventListener("click", clearContourOnly);
+      clearMarksBtn.addEventListener("click", clearMarks);
+      calculateBtn.addEventListener("click", calculate);
+      downloadMaskBtn.addEventListener("click", downloadOverlay);
+    </script>
+  </body>
+</html>

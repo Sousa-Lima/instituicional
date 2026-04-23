@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../../swarm"
+		},
+		{
+			"path": "calculo-volume"
 		}
 	],
 	"settings": {

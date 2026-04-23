@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\BlogPostController;
 use App\Http\Controllers\Api\V1\CaseStudyController;
 use App\Http\Controllers\Api\V1\CaseStudyManageController;
 use App\Http\Controllers\Api\V1\ContentSlugController;
@@ -34,6 +35,8 @@ Route::prefix('v1')->group(function () {
     });
 
     Route::middleware(['api.public', 'throttle:120,1'])->group(function () {
+        Route::get('blog/posts', [BlogPostController::class, 'index']);
+        Route::get('blog/posts/{slug}', [BlogPostController::class, 'show'])->where('slug', '[a-z0-9\-]+');
         Route::get('content/slugs', ContentSlugController::class);
         Route::get('cases', [CaseStudyController::class, 'index']);
         Route::get('cases/{slug}', [CaseStudyController::class, 'show'])->where('slug', '[a-z0-9\-]+');

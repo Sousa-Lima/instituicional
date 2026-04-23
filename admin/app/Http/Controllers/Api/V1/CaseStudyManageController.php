@@ -11,6 +11,7 @@ use App\Support\SlugGenerator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Cache;
 
 class CaseStudyManageController extends Controller
 {
@@ -47,6 +48,8 @@ class CaseStudyManageController extends Controller
 
         $caseStudy = CaseStudy::query()->create($data);
 
+        Cache::store('redis')->tags(['cases'])->flush();
+
         return response()->json((new CaseStudyResource($caseStudy))->toArray($request), JsonResponse::HTTP_CREATED);
     }
 
@@ -66,6 +69,8 @@ class CaseStudyManageController extends Controller
         $caseStudy->fill($data);
         $caseStudy->save();
 
+        Cache::store('redis')->tags(['cases'])->flush();
+
         return new CaseStudyResource($caseStudy->fresh());
     }
 
@@ -73,6 +78,8 @@ class CaseStudyManageController extends Controller
     {
         $caseStudy = CaseStudy::query()->findOrFail($id);
         $caseStudy->delete();
+
+        Cache::store('redis')->tags(['cases'])->flush();
 
         return response()->json([], JsonResponse::HTTP_NO_CONTENT);
     }

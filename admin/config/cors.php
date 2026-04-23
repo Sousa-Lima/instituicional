@@ -1,6 +1,6 @@
 <?php
 
-$defaults = 'http://localhost:4321,http://127.0.0.1:4321,https://sousalimaconsultoria.com.br,https://www.sousalimaconsultoria.com.br';
+$defaults = 'http://localhost:4321,http://127.0.0.1:4321,https://sousalimaconsultoria.com.br,https://www.sousalimaconsultoria.com.br,https://everton.etc.br,https://www.everton.etc.br';
 
 return [
 

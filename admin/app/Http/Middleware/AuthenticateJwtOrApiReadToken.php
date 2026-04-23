@@ -57,6 +57,7 @@ class AuthenticateJwtOrApiReadToken
         $prefixes = [
             'api/v1/services',
             'api/v1/cases',
+            'api/v1/blog/posts',
             'api/v1/content/slugs',
         ];
 

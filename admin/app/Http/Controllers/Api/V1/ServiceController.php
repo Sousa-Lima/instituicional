@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ServiceResource;
 use App\Models\Service;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Cache;
 use OpenApi\Attributes as OA;
 
 class ServiceController extends Controller
@@ -23,15 +25,17 @@ class ServiceController extends Controller
             new OA\Response(response: 401, description: 'Unauthorized'),
         ]
     )]
-    public function index(): AnonymousResourceCollection
+    public function index(): JsonResponse
     {
-        $services = Service::query()
-            ->published()
-            ->orderBy('order')
-            ->orderBy('title')
-            ->get();
+        $data = Cache::store('redis')->tags(['services'])->remember(
+            'api.services.index',
+            3600,
+            fn () => ServiceResource::collection(
+                Service::query()->published()->orderBy('order')->orderBy('title')->get()
+            )->resolve()
+        );
 
-        return ServiceResource::collection($services);
+        return response()->json(['data' => $data]);
     }
 
     /**
@@ -56,15 +60,20 @@ class ServiceController extends Controller
             new OA\Response(response: 404, description: 'Not found'),
         ]
     )]
-    public function show(string $slug): ServiceResource
+    public function show(string $slug): JsonResponse
     {
-        $service = Service::query()
-            ->published()
-            ->where('slug', $slug)
-            ->first();
+        $data = Cache::store('redis')->tags(['services'])->remember(
+            "api.services.show.{$slug}",
+            3600,
+            function () use ($slug) {
+                $service = Service::query()->published()->where('slug', $slug)->first();
 
-        abort_if($service === null, 404, 'Serviço não encontrado.');
+                return $service !== null ? (new ServiceResource($service))->resolve() : null;
+            }
+        );
 
-        return new ServiceResource($service);
+        abort_if($data === null, 404, 'Serviço não encontrado.');
+
+        return response()->json(['data' => $data]);
     }
 }

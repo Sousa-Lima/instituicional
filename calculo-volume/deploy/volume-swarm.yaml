@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  volume_app:
+    image: eolimabr/calculo-volume:latest
+    networks:
+      - traefik-public
+    environment:
+      TZ: America/Sao_Paulo
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        - "traefik.swarm.network=traefik-public"
+        - "traefik.http.routers.slc-volume.rule=Host(`volume.sousalimaconsultoria.com.br`)"
+        - "traefik.http.routers.slc-volume.entrypoints=websecure"
+        - "traefik.http.routers.slc-volume.tls=true"
+        - "traefik.http.routers.slc-volume.tls.certresolver=le"
+        - "traefik.http.services.slc-volume.loadbalancer.server.port=8080"
+        - "traefik.http.routers.slc-volume.middlewares=slc-volume-headers"
+        - "traefik.http.middlewares.slc-volume-headers.headers.stsSeconds=31536000"
+        - "traefik.http.middlewares.slc-volume-headers.headers.forceSTSHeader=true"
+        - "traefik.http.middlewares.slc-volume-headers.headers.frameDeny=true"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+networks:
+  traefik-public:
+    external: true

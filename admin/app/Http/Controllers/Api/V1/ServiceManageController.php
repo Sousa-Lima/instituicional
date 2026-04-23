@@ -11,6 +11,7 @@ use App\Support\SlugGenerator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Cache;
 
 class ServiceManageController extends Controller
 {
@@ -47,6 +48,8 @@ class ServiceManageController extends Controller
 
         $service = Service::query()->create($data);
 
+        Cache::store('redis')->tags(['services'])->flush();
+
         return response()->json((new ServiceResource($service))->toArray($request), JsonResponse::HTTP_CREATED);
     }
 
@@ -66,6 +69,8 @@ class ServiceManageController extends Controller
         $service->fill($data);
         $service->save();
 
+        Cache::store('redis')->tags(['services'])->flush();
+
         return new ServiceResource($service->fresh());
     }
 
@@ -73,6 +78,8 @@ class ServiceManageController extends Controller
     {
         $service = Service::query()->findOrFail($id);
         $service->delete();
+
+        Cache::store('redis')->tags(['services'])->flush();
 
         return response()->json([], JsonResponse::HTTP_NO_CONTENT);
     }

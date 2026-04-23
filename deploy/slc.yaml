@@ -27,7 +27,8 @@
 #   - Proxy Traefik com certresolver "le" (Let's Encrypt) nos entrypoints web/websecure.
 #   - Secrets Swarm (nomes específicos desta app — não colidem com outras stacks no mesmo host):
 #       slc_sousalima_db_password, slc_sousalima_app_key, slc_sousalima_jwt_secret,
-#       slc_sousalima_smtp_password  (ver comentário "Secrets" no final do ficheiro).
+#       slc_sousalima_smtp_password, slc_sousalima_instagram_token, slc_sousalima_linkedin_token,
+#       slc_sousalima_linkedin_client_id, slc_sousalima_linkedin_client_secret
 #   - MAIL_USERNAME: endereço completo da caixa Microsoft 365 que envia (ex.: noreply@dominio).
 #   - SMTP Microsoft 365: smtp.office365.com:587 TLS — password no secret (conta com SMTP
 #     autenticado; MFA pode exigir password de aplicação — política Microsoft).
@@ -39,6 +40,8 @@ version: '3.9'
 
 # Caminhos no host (ajuste uma vez; Laravel: storage/app e o mesmo ramo public/ em public/storage)
 x-app-defaults: &app-defaults
+  extra_hosts:
+   - api.sousalimaconsultoria.com.br:172.17.0.1  # Ajustar IP do host se necessário (docker network inspect bridge)
   image: eolimabr/php8.4-sousalima-multitenant:latest
   working_dir: /var/www/html
   networks:
@@ -46,9 +49,10 @@ x-app-defaults: &app-defaults
   environment:
     APP_ENV: production
     APP_DEBUG: "false"
-    # Erros também no stderr (docker service logs slc_app / slc_api_nginx)
-    LOG_CHANNEL: stderr
-    LOG_LEVEL: error
+    # Logs detalhados no arquivo + stderr (docker service logs)
+    LOG_CHANNEL: stack
+    LOG_STACK: single,stderr
+    LOG_LEVEL: debug
     # Fuso igual ao servidor (ajuste se necessário; no host: timedatectl)
     TZ: America/Sao_Paulo
     APP_TIMEZONE: America/Sao_Paulo
@@ -80,6 +84,15 @@ x-app-defaults: &app-defaults
     MAIL_FROM_NAME: "Sousa Lima Consultoria"
     FILAMENT_ADMIN_EMAILS: "admin@sousalimaconsultoria.com.br,eolimabr@gmail.com"
     SESSION_SECURE_COOKIE: "true"
+    # Meta / Instagram Graph API (desativado nesta stack)
+    # INSTAGRAM_USER_ID: ""  # preencher com o Instagram Business Account ID numérico
+    # INSTAGRAM_ACCESS_TOKEN_FILE: /run/secrets/slc_sousalima_instagram_token
+    # LinkedIn API v2
+    LINKEDIN_AUTHOR_URN: "urn:li:person:_E4x_2qEHd"
+    LINKEDIN_CLIENT_ID_FILE: /run/secrets/slc_sousalima_linkedin_client_id
+    LINKEDIN_CLIENT_SECRET_FILE: /run/secrets/slc_sousalima_linkedin_client_secret
+    LINKEDIN_SCOPES: "w_member_social,r_liteprofile"
+    LINKEDIN_ACCESS_TOKEN_FILE: /run/secrets/slc_sousalima_linkedin_token_v2
   secrets:
     - source: slc_sousalima_db_password
       target: /run/secrets/slc_sousalima_db_password
@@ -89,6 +102,14 @@ x-app-defaults: &app-defaults
       target: /run/secrets/slc_sousalima_jwt_secret
     - source: slc_sousalima_smtp_password
       target: /run/secrets/slc_sousalima_smtp_password
+    # - source: slc_sousalima_instagram_token
+    #   target: /run/secrets/slc_sousalima_instagram_token
+    - source: slc_sousalima_linkedin_client_id
+      target: /run/secrets/slc_sousalima_linkedin_client_id
+    - source: slc_sousalima_linkedin_client_secret
+      target: /run/secrets/slc_sousalima_linkedin_client_secret
+    - source: slc_sousalima_linkedin_token_v2
+      target: /run/secrets/slc_sousalima_linkedin_token_v2
   volumes:
     # Código + vendor + .env no host (composer install em admin/ no servidor).
     # Remover esta entrada quando a app estiver estável e for empacotada na imagem.
@@ -305,4 +326,12 @@ secrets:
   slc_sousalima_jwt_secret:
     external: true
   slc_sousalima_smtp_password:
+    external: true
+  # slc_sousalima_instagram_token:
+  #   external: true
+  slc_sousalima_linkedin_client_id:
+    external: true
+  slc_sousalima_linkedin_client_secret:
+    external: true
+  slc_sousalima_linkedin_token_v2:
     external: true

@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CaseStudyResource;
 use App\Models\CaseStudy;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Cache;
 use OpenApi\Attributes as OA;
 
 class CaseStudyController extends Controller
@@ -33,17 +35,24 @@ class CaseStudyController extends Controller
             new OA\Response(response: 401, description: 'Unauthorized'),
         ]
     )]
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request): JsonResponse
     {
         $status = $request->query('status', 'published');
 
-        $query = CaseStudy::query()->orderByDesc('featured')->orderByDesc('updated_at');
+        $data = Cache::store('redis')->tags(['cases'])->remember(
+            "api.cases.index.{$status}",
+            3600,
+            function () use ($status) {
+                $query = CaseStudy::query()->orderByDesc('featured')->orderByDesc('updated_at');
+                if ($status === 'published') {
+                    $query->published();
+                }
 
-        if ($status === 'published') {
-            $query->published();
-        }
+                return CaseStudyResource::collection($query->get())->resolve();
+            }
+        );
 
-        return CaseStudyResource::collection($query->get());
+        return response()->json(['data' => $data]);
     }
 
     /**
@@ -68,15 +77,20 @@ class CaseStudyController extends Controller
             new OA\Response(response: 404, description: 'Not found'),
         ]
     )]
-    public function show(string $slug): CaseStudyResource
+    public function show(string $slug): JsonResponse
     {
-        $case = CaseStudy::query()
-            ->published()
-            ->where('slug', $slug)
-            ->first();
+        $data = Cache::store('redis')->tags(['cases'])->remember(
+            "api.cases.show.{$slug}",
+            3600,
+            function () use ($slug) {
+                $case = CaseStudy::query()->published()->where('slug', $slug)->first();
 
-        abort_if($case === null, 404, 'Case não encontrado.');
+                return $case !== null ? (new CaseStudyResource($case))->resolve() : null;
+            }
+        );
 
-        return new CaseStudyResource($case);
+        abort_if($data === null, 404, 'Case não encontrado.');
+
+        return response()->json(['data' => $data]);
     }
 }

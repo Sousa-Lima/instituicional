@@ -1,0 +1,1975 @@
+﻿# Documentacao Unificada
+
+## conhecimento/base-publicacao.md
+
+# Base para publicação (futuro)
+
+Documento de partida para quando o serviço for colocado em produção. Ajuste datas, nomes de stack e detalhes conforme a infraestrutura real.
+
+## Objetivo
+
+Disponibilizar o site e a aplicação web da **Sousa Lima Consultoria** com HTTPS, boa disponibilidade e processo de deploy repetível.
+
+## Arquitetura alvo (visão geral)
+
+| Camada | Função |
+|--------|--------|
+| **Entrada (proxy reverso)** | Terminação TLS, roteamento por hostname, redirecionamento HTTP → HTTPS. |
+| **Servidor web** | Arquivos estáticos e encaminhamento de PHP (ou runtime equivalente) para a aplicação. |
+| **Aplicação** | Lógica de negócio, painéis administrativos, APIs. |
+| **Dados** | Banco relacional e, se necessário, cache e filas. |
+| **Jobs** | Workers de fila e agendador de tarefas, se o produto exigir. |
+
+Orquestração adotada para o momento: **Docker Swarm** com rede overlay para serviços internos e rede pública para o proxy ([planejamento-e-faltantes-site-institucional.md](planejamento-e-faltantes-site-institucional.md)).
+
+**Stack de referência (frontend nginx, static, Laravel, worker, PostgreSQL, Redis):** [`deploy/slc.yaml`](../deploy/slc.yaml) — `docker stack deploy -c deploy/slc.yaml slc`. Exige Traefik com resolver `le`, rede `traefik-public` e secrets nomeados no próprio ficheiro. Persistência em **diretórios no host** (`/srv/sistemas/slc/data/...`, bind mounts), incluindo dados de Postgres e Redis — ver comentários no topo do YAML.
+
+**Procedimento passo a passo (deploy em produção):** [procedimento-deploy-producao-slc.md](procedimento-deploy-producao-slc.md).
+
+## Pré-requisitos no ambiente
+
+- Cluster Swarm inicializado e nós com Docker atualizado.
+- Rede overlay compartilhada com o proxy (ex.: nome reservado para tráfego externo).
+- Proxy com suporte a **Let’s Encrypt** (ou outro emissor de certificados) e entrypoints para HTTP e HTTPS.
+- **DNS**: registros A (e AAAA, se aplicável) apontando para o endereço público que recebe o tráfego.
+
+## Checklist de publicação (rascunho)
+
+1. Definir domínio canônico (com ou sem `www`) e política de redirecionamento.
+2. Conferir variáveis de ambiente de produção (URL da app, segredos, conexões de banco e fila).
+3. Subir ou atualizar a stack com réplicas e limites de recurso alinhados à carga esperada.
+4. Validar certificado TLS e cabeçalhos de segurança (HSTS, conforme política).
+5. Testar fluxos críticos (login, formulários, e-mails transacionais).
+
+## Evolução desta base
+
+Registre em `definicoes/` decisões fixas (nomes comerciais, SLA desejado, política de backup). Registre aqui em `conhecimento/` runbooks e incidentes quando começarem a ocorrer.
+
+Normas técnicas de stack (SSG/ISR, imagens, terceiros, cabeçalhos de segurança): [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md).
+
+---
+
+## conhecimento/conteudo-mensagens-referencia.md
+
+# Conteúdo e mensagens (referência dos sites modelo)
+
+Registro do **tipo de informação** que os sites de referência transmitem bem — em especial **MVP** e **resultados** — para orientar redação e blocos do futuro site da Sousa Lima Consultoria. Ver também [referencia-layout-sites.md](referencia-layout-sites.md) (estrutura de página).
+
+**Copy aplicada (Home v1):** [copy-home-v1-slc.md](copy-home-v1-slc.md). **Verticais de serviço (v1):** [copy-servicos-verticais-v1-slc.md](copy-servicos-verticais-v1-slc.md).
+
+As fontes citadas são benchmarks de comunicação; textos finais da SLC devem ser **originais** e alinhados ao posicionamento interno.
+
+## Mensagem: MVP e velocidade de entrega
+
+| Ideia a comunicar | Por que funciona |
+|-------------------|------------------|
+| **Produto mínimo viável em prazo definido** | Reduz medo de projeto infinito; ancora expectativa (faixas de 30–90 dias são comuns no mercado B2B de software). |
+| **Entregas contínuas e feedback** | Mostra método ágil: não é “big bang”, é validação em ciclos. |
+| **Escopo alinhado ao estágio do negócio** | Convida quem ainda valida ideia, não só quem já tem especificação fechada. |
+
+**Sugestão para a SLC:** definir internamente se vocês falam em “MVP”, “piloto”, “primeira versão” ou “fase 1” — e **um intervalo de prazo realista** para o portfólio de ofertas (evitar promessa genérica).
+
+## Mensagem: resultados e credibilidade
+
+| Tipo de prova | Exemplo de uso (conceitual) |
+|---------------|-----------------------------|
+| **Números agregados** | Quantidade de clientes, anos de atuação, projetos entregues, pessoas no time (estilo “+N …”). |
+| **Marcas ou setores** | Faixa de logos ou menção a segmentos atendidos (“com a confiança de empresas em …”). |
+| **Cases com métrica** | Título ou resumo que cite **resultado mensurável** (ganho de eficiência, redução de tempo, aumento de conversão, etc.). |
+| **Depoimentos** | Citação curta + nome e contexto (cargo, empresa ou “cliente em …”). |
+
+**Sugestão para a SLC:** preparar **2–3 cases** (mesmo anônimos ou com dados agregados) com **um número cada** — ex.: “redução de X horas/semana”, “Y% menos retrabalho” — quando houver autorização do cliente.
+
+## Combinação recomendada na página inicial
+
+1. **Promessa** (hero): transformação ou benefício principal.  
+2. **Como entregam** (MVP/ágil ou metodologia própria): prazos e forma de trabalho.  
+3. **Prova** (números + logos ou cases).  
+4. **Próximo passo** (CTA + contato).
+
+Ordem pode seguir o que já está descrito em [referencia-layout-sites.md](referencia-layout-sites.md).
+
+## Tom e vocabulário (inspiração, não cópia)
+
+- **Direto e orientado a negócio:** menos jargão técnico na primeira dobra; detalhe em páginas internas.  
+- **Parceiro, não fornecedor genérico:** “entendemos seu contexto”, “soluções sob medida” — desde que sustentado por exemplos reais depois.  
+- **Transparência em processo e prazo:** alinha expectativa e conversa com o interesse por MVP que você destacou.
+
+## Checklist ao escrever conteúdo real
+
+- [ ] Prazo ou modelo de entrega (MVP/piloto/fases) está **honesto** e revisado pelo time?  
+- [ ] Pelo menos um **resultado numérico** ou **case** pode ser publicado (ou “em breve” com data)?  
+- [ ] Depoimentos têm **permissão de uso**?  
+- [ ] Números institucionais (+anos, +projetos) foram **conferidos**?
+
+Atualize este documento quando a SLC fechar proposta de valor e política comercial (o que pode ir no site).
+
+---
+
+## conhecimento/contrato-api-build-time-slc.md
+
+# Contrato de API — build-time (Astro) ↔ admin (Laravel)
+
+Proposta técnica alinhada ao [stack-tecnico-slc.md](../definicoes/stack-tecnico-slc.md), [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md), [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md) e [qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md).
+
+**Conteúdo editorial (ex.: Home):** textos acordados em [copy-home-v1-slc.md](copy-home-v1-slc.md) devem ser **armazenados no Laravel** e **entregues via API** para o Astro **no `build`** (SSG). Assim o HTML estático já inclui copy e estrutura principal, favorecendo **LCP** (pintura precoce do conteúdo) e **INP** (menos JS obrigatório na primeira interação para exibir texto).
+
+---
+
+## Prioridade: definir o contrato de API primeiro
+
+Com **Astro em SSG**, o build precisa da **estrutura exata** dos dados para gerar HTML estático sem surpresas. A melhor prática é **fixar o contrato** (OpenAPI ou interfaces TypeScript compartilhadas na prática) **antes** de fechar todas as telas.
+
+| Frente | Benefício |
+|--------|-----------|
+| **Frontend (Astro)** | Componentes com **mocks** que seguem o contrato; depois, troca por `fetch` no build sem redesenhar o modelo mental. |
+| **Backend (Laravel + Filament)** | Formulários do painel (**Novo case**, etc.) com **campos alinhados** ao que o site consome. |
+| **CI/CD + webhook** | Validação de **campos obrigatórios** antes de publicar; reduz build quebrando no Swarm por dado incompleto. |
+
+O desenvolvimento pode ser **paralelo**, mas o **contrato é a âncora** comum.
+
+---
+
+## 1. Endpoints de build-time (descoberta de caminhos)
+
+Para o Astro gerar rotas estáticas (**SSG**), o build precisa saber **quais URLs existem**.
+
+| Item | Definição |
+|------|-----------|
+| **Endpoint** | `GET /api/v1/content/slugs` |
+| **Função** | Listar slugs **ativos** de serviços, cases e posts do blog (ou equivalente no modelo de dados). |
+| **Resposta** | Lista **enxuta**: idealmente apenas **`slug`**, **`updated_at`** (ISO 8601) e identificador do **tipo** de recurso (ex.: `kind: "service" | "case" | "post"`), para cache e invalidação. |
+| **Boas práticas** | Endpoint **leve** (sem corpo pesado); paginação se a lista crescer muito. |
+
+O Astro usa esse retorno em `getStaticPaths` (ou equivalente) para gerar uma página por slug. Para **cases**, os slugs também podem ser derivados de `GET /api/v1/cases` (apenas itens `published`) — ver abaixo.
+
+---
+
+## 2. Contrato de dados (TypeScript strict)
+
+O frontend (**Astro**, TypeScript **`strict`**) deve espelhar o contrato da API para o build **falhar cedo** se faltar campo obrigatório.
+
+### 2.1 Serviços (referência Sagitta / Venturus — cards + página interna)
+
+```typescript
+/** Contrato de API — entidade Serviço (exemplo) */
+interface ServiceContract {
+  id: string;
+  slug: string;
+  title: string;
+  short_description: string; // cards da home / listagens
+  content_html: string; // corpo rico na página interna
+  icon_name: string; // ex.: ícone Lucide / mapeamento Shadcn
+  category: 'consultoria' | 'software' | 'cloud';
+  seo: {
+    meta_title: string;
+    meta_description: string;
+    og_image: string;
+  };
+  order: number; // ordenação na vitrine
+}
+```
+
+### 2.2 Cases (portfólio — performance + SEO)
+
+| Item | Definição |
+|------|-----------|
+| **Endpoint** | `GET /api/v1/cases` |
+| **Uso** | Lista completa para a **galeria** (`/cases`), geração de **`getStaticPaths`** (slugs) e páginas internas (`/cases/[slug]`). |
+| **Filtro no build** | Incluir apenas registros `status: "published"` (ou endpoint dedicado `/api/v1/cases?status=published` conforme política da API). |
+
+**Interface alinhada às diretrizes SLC** (métricas obrigatórias; imagens com dimensões para **LCP** e **CLS**):
+
+```typescript
+/** Contrato de API — Case study (portfólio) */
+interface CaseStudy {
+  id: string;
+  slug: string; // ex.: "otimizacao-infraestrutura-cloud"
+  status: 'published' | 'draft';
+  featured: boolean; // destaque na Home
+
+  // Conteúdo principal
+  title: string;
+  customer_name: string;
+  sector: string; // ex.: "Logística", "Fintech"
+  short_summary: string; // card da listagem
+  content_html: string; // corpo rico: problema, solução, resultado
+
+  // Métricas (diretrizes de autoridade / resultados)
+  metrics: {
+    label: string; // ex.: "Redução de custos"
+    value: string; // ex.: "35%"
+  }[];
+
+  // Performance e imagens (LCP / CLS)
+  main_image: {
+    url: string;
+    alt: string;
+    width: number;
+    height: number;
+  };
+
+  // SEO
+  seo: {
+    meta_title: string;
+    meta_description: string;
+    og_image: string;
+    keywords: string[];
+  };
+}
+```
+
+**Fixture JSON de exemplo** (case “Enterprise”, dados fictícios, para testes de layout no Astro): [exemplo-fixture-case-enterprise-slc.md](exemplo-fixture-case-enterprise-slc.md).
+
+### 2.3 Posts (blog / insights)
+
+Definir interface `PostContract` no mesmo padrão (slug, `content_html`, `seo`, mídia com dimensões) quando o blog entrar no build.
+
+---
+
+## 3. Imagens e performance (LCP / CLS)
+
+| Regra | Detalhe |
+|-------|---------|
+| **Contrato** | A API **não** deve enviar só a URL da imagem: incluir **`width`** e **`height`** (dimensões originais ou de exibição planejada). |
+| **Motivo** | Permite ao **`<Image />` do Astro** (e `aspect-ratio` / reserva de espaço) reduzir **CLS** e melhorar **LCP** ao priorizar o recurso certo — ver [qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md). |
+
+Exemplo de campo em anexo a `seo` ou objeto de mídia:
+
+```typescript
+hero_image?: {
+  url: string;
+  width: number;
+  height: number;
+  alt: string;
+};
+```
+
+(Ajustar nomes ao modelo real do Laravel.)
+
+---
+
+## 4. Gatilho de rebuild (webhook de publicação)
+
+O site é **estático**: após alterar conteúdo no **admin**, é preciso **novo build + deploy**.
+
+| Item | Definição |
+|------|-----------|
+| **Fluxo** | No admin, ação **“Publicar”** dispara um **Job** Laravel. |
+| **Destino** | URL de **dispatch** do CI do **repositório frontend** (GitHub Actions `repository_dispatch`, GitLab `trigger`, etc.) para iniciar build Astro e deploy no **Docker Swarm**. |
+
+### Payload sugerido (JSON)
+
+```json
+{
+  "event": "content.published",
+  "model": "Service",
+  "id": "123",
+  "timestamp": "2023-10-27T10:00:00Z",
+  "secret": "TOKEN_DE_SEGURANCA_SLC"
+}
+```
+
+- **`secret`:** valor conhecido só pelo admin e pelo pipeline (armazenado como **secret** no CI). Validar com comparação **timing-safe**; preferir **HTTPS** apenas.
+- Alternativa: assinatura **HMAC** no header em evoluções futuras.
+
+Rebuild completo é aceitável no início; otimizações (build parcial) podem vir depois. Exemplo de `model` no payload: `"Service"`, `"Case"`, `"Post"`, conforme o recurso publicado.
+
+---
+
+## 5. Segurança e cabeçalhos
+
+### Autenticação do build (consumo da API pelo Astro)
+
+| Item | Definição |
+|------|-----------|
+| **Método** | Header **`Authorization: Bearer <token>`** com token de **leitura** só para o pipeline de build. |
+| **Config** | Variável **`API_READ_TOKEN`** (ou nome equivalente) **no CI do frontend**, nunca commitada. |
+| **Escopo** | Token apenas para endpoints necessários ao SSG (ex.: `/api/v1/content/...`, `/api/v1/cases`, `/api/v1/...`). |
+
+### Sanitização de HTML
+
+| Responsável | Ação |
+|-------------|------|
+| **Laravel (admin)** | Sanitizar **`content_html`** na gravação (ex.: lista permitida de tags/atributos, ou biblioteca de sanitização). |
+| **Astro** | Ao renderizar HTML vindo da API, usar mecanismo que **não** trate string como HTML confiável sem critério (evitar XSS); alinhar com **CSP** abaixo. |
+
+### Content Security Policy (CSP)
+
+Definir política no **servidor que entrega o site estático** e/ou **edge**, coerente com scripts permitidos (analytics após consentimento — [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md)) e com [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md).
+
+---
+
+## 6. Leads (runtime — fora do SSG)
+
+O site estático **não** obtém leads no build. O formulário de contato é uma **ilha** no Astro que envia dados ao **Laravel** em tempo real.
+
+| Item | Definição |
+|------|-----------|
+| **Endpoint** | `POST /api/v1/lead/contact` |
+| **Corpo** | JSON (`name`, `email`, `company`, `interest`, `message`, `consent_lgpd`; campos adicionais opcionais — ver doc). |
+| **Autenticação** | **Não** usar o `API_READ_TOKEN` do pipeline; usar **CSRF** + rate limit + (opc.) captcha conforme política. |
+| **CORS** | Permitir origem do site público — [dominios-e-ambiente.md](../definicoes/dominios-e-ambiente.md). |
+
+Especificação completa (UX, WCAG, LGPD, INP, JSON estendido): [formulario-contato-lead-slc.md](formulario-contato-lead-slc.md).
+
+---
+
+## Evolução
+
+Versionar a API em **`/api/v1/`**; mudanças que quebram o contrato exigem deploy coordenado ou janela de compatibilidade documentada entre os **dois repositórios**.
+
+---
+
+## conhecimento/copy-home-v1-slc.md
+
+# Copy v1 — Home (Sousa Lima Consultoria)
+
+Proposta de texto para a **primeira dobra** e blocos principais da Home, alinhada a [conteudo-mensagens-referencia.md](conteudo-mensagens-referencia.md), [referencia-layout-sites.md](referencia-layout-sites.md) e ao mapa em [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md).
+
+**Status:** rascunho para revisão interna e **validação jurídica** onde aplicável; métricas **N**, **X**, **Y** são **placeholders** — substituir por dados reais ou remover até haver base.
+
+**Nota técnica:** este conteúdo deve ser **fornecido pela API do admin (Laravel)** e **consumido pelo Astro no build** (SSG), para que o HTML das páginas estáticas já saia completo no deploy — sem depender de `fetch` no cliente para o texto principal. Isso favorece **LCP** (marcação e texto cedo) e **INP** (menos trabalho na main thread na primeira interação). Contrato e slugs: [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md), [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md); métricas: [qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md).
+
+---
+
+## 1. Hero (primeira dobra)
+
+| Elemento | Texto |
+|----------|--------|
+| **Título (H1)** | Transformação digital com foco em resultados e prazos reais. |
+| **Subtítulo** | Consultoria especializada em viabilizar soluções de software e infraestrutura. Entregamos o seu MVP em 30 a 90 dias, unindo agilidade técnica à visão de negócio. |
+| **CTA primário (botão)** | Agendar diagnóstico gratuito |
+| **CTA secundário (link)** | Conhecer nossos serviços |
+
+*Sugestão de destino do CTA secundário:* âncora ou rota `/servicos`.
+
+---
+
+## 2. Serviços (resumo)
+
+**Título (H2):** Soluções sob medida para o estágio do seu negócio.
+
+| Card | Título (H3) | Descrição |
+|------|-------------|-----------|
+| 1 | Consultoria e processos | Otimização de fluxos para reduzir retrabalho e aumentar a eficiência operacional. |
+| 2 | Desenvolvimento de software | Criação de sistemas robustos e MVPs escaláveis com stack moderna (Laravel + React). |
+| 3 | Cloud e infraestrutura | Arquitetura de alta disponibilidade com Docker Swarm e foco em segurança. |
+
+Alinhado ao [stack-tecnico-slc.md](../definicoes/stack-tecnico-slc.md) e à [base-publicacao.md](base-publicacao.md) (Swarm) onde fizer sentido para o público-alvo.
+
+---
+
+## 3. Diferencial SLC (método)
+
+**Título (H2):** Parceiro estratégico, não apenas fornecedor.
+
+**Corpo:** Acreditamos na validação por ciclos. Em vez de projetos infinitos, trabalhamos com entregas contínuas e feedback real, garantindo que o software evolua conforme a necessidade do mercado.
+
+---
+
+## 4. Prova social (credibilidade)
+
+**Título (H2):** Resultados que geram valor.
+
+**Métricas (exemplos conceituais — preencher ou ajustar):**
+
+- +**N** projetos entregues com sucesso.
+- **X**% de redução média em custos operacionais dos nossos clientes.
+- **Y** dias é o nosso prazo médio para lançamento de uma primeira versão (fase 1).
+
+Incluir, quando possível, **faixa de logotipos** e/ou depoimentos (ver [conteudo-mensagens-referencia.md](conteudo-mensagens-referencia.md)).
+
+---
+
+## 5. FAQ (conversão)
+
+**Pergunta 1:** Qual o tempo médio para ver o projeto funcionando?
+
+**Resposta:** Trabalhamos com modelos de 30, 60 ou 90 dias para a primeira fase (MVP), dependendo da complexidade.
+
+**Pergunta 2:** Vocês atendem empresas que ainda estão validando a ideia?
+
+**Resposta:** Sim. O nosso foco é alinhar o escopo ao estágio atual do seu negócio para evitar desperdício de recursos.
+
+---
+
+## 6. Rodapé (trecho institucional)
+
+**Frase de fechamento:** Sousa Lima Consultoria — Conhecimento técnico a serviço da sua evolução.
+
+**Links obrigatórios (LGPD):** Política de privacidade; política de cookies / preferências — ver [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md) e [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md) (rodapé técnico).
+
+---
+
+## Semântica e SEO
+
+- **Um único H1** na página (hero); hierarquia H2 → H3 nos blocos acima.
+- Metadados da página (title, description) derivados do H1 e do subtítulo, com ajuste fino para SERP.
+
+---
+
+## conhecimento/copy-servicos-verticais-v1-slc.md
+
+# Copy v1 — verticais de serviço (SLC)
+
+Proposta de texto para as **três páginas internas** de serviços (`/servicos/[slug]`), alinhada à estratégia **MVP 30–90 dias**, ao perfil **enterprise** ([Venturus](referencia-layout-sites.md)) e a [conteudo-mensagens-referencia.md](conteudo-mensagens-referencia.md), [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md) e [copy-home-v1-slc.md](copy-home-v1-slc.md).
+
+**Nota técnica:** o conteúdo deve ser **fornecido pela API do admin (Laravel)** e **consumido pelo Astro no build** (SSG), conforme contrato **`ServiceContract`** (`§2.1` em [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md), [copy-home-v1-slc.md](copy-home-v1-slc.md)).
+
+**KPIs com X% ou metas absolutas** são placeholders até haver dados reais; revisar antes de publicar.
+
+---
+
+## 1. Consultoria de processos e eficiência
+
+**Foco:** redução de retrabalho e otimização de fluxos de negócio.
+
+| Campo | Texto |
+|-------|--------|
+| **Título (H1)** | Consultoria de processos: eficiência operacional orientada a resultados. |
+| **Proposta de valor** | Transformamos gargalos operacionais em fluxos ágeis. O nosso foco não é apenas documentar, mas executar mudanças que reduzam custos e aumentem a produtividade da sua **equipe**. |
+
+**O que entregamos**
+
+- **Diagnóstico de gargalos:** identificação de pontos de fricção que atrasam a entrega final.
+- **Desenho de fluxos “to-be”:** reestruturação de processos com foco em automação e eliminação de tarefas manuais.
+- **Acompanhamento de implementação:** suporte na **adoção** das novas metodologias pela equipe.
+
+**Métrica de sucesso (KPI):** redução média de **X%** no tempo de ciclo de processos internos.
+
+---
+
+## 2. Desenvolvimento de software e MVPs
+
+**Foco:** velocidade de lançamento e stack moderna (**Laravel** + **React** / **Inertia**; site institucional em **Astro** — [stack-tecnico-slc.md](../definicoes/stack-tecnico-slc.md)).
+
+| Campo | Texto |
+|-------|--------|
+| **Título (H1)** | Desenvolvimento de software: do conceito ao MVP em tempo recorde. |
+| **Proposta de valor** | Construímos soluções de software robustas e escaláveis. Especialistas em levar a sua ideia ao mercado em **30 a 90 dias**, com boas práticas de **clean code** e arquitetura. |
+
+**O que entregamos**
+
+- **Desenvolvimento de MVP:** foco nas funcionalidades críticas para validação rápida de mercado.
+- **Sistemas enterprise:** aplicações complexas com frontend em **React/Inertia** e backend **Laravel** ([stack-tecnico-slc.md](../definicoes/stack-tecnico-slc.md)).
+- **Refatoração e escalabilidade:** evolução de sistemas legados para arquiteturas modernas.
+
+**Métrica de sucesso (KPI):** lançamento da primeira versão funcional em até **90 dias** (conforme escopo).
+
+---
+
+## 3. Cloud e infraestrutura de alta disponibilidade
+
+**Foco:** segurança, resiliência e orquestração com **Docker Swarm** ([base-publicacao.md](base-publicacao.md), [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md)).
+
+| Campo | Texto |
+|-------|--------|
+| **Título (H1)** | Infraestrutura cloud: estabilidade e segurança para o seu ecossistema. |
+| **Proposta de valor** | Garantimos que a sua aplicação esteja sempre disponível e protegida. Implementamos arquiteturas modernas que suportam picos de tráfego sem comprometer a performance. |
+
+**O que entregamos**
+
+- **Orquestração com Docker Swarm:** gestão de containers para alta disponibilidade.
+- **Segurança e compliance:** cabeçalhos (**CSP**, **HSTS**), alinhamento a **LGPD** onde aplicável — [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md), [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md).
+- **Monitorização e performance:** otimização de **TTFB** e tempos de resposta — [qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md).
+
+**Métrica de sucesso (KPI):** meta de **99,9%** de uptime e conformidade técnica acordada por escopo (revisar com operações antes de publicar).
+
+---
+
+## Notas técnicas para implementação (Astro + Laravel)
+
+| Tema | Orientação |
+|------|------------|
+| **Imagens e LCP / CLS** | Contrato da API com **largura e altura** explícitas para imagens de cada página de serviço; usar **`<Image />` do Astro** — [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md), [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md). |
+| **SEO semântico** | Injetar **JSON-LD** por página (`Service` / `ProfessionalService` / `Offer` conforme modelo, além de **`Organization`**) — [projeto-astro-laravel-institutional.md](projeto-astro-laravel-institutional.md), [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md) §6. |
+| **Conversão (INP)** | CTA com feedback visual em **menos de 100 ms** (hover/active) — [diretrizes-qualidade-site-slc.md](../definicoes/diretrizes-qualidade-site-slc.md), [qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md). |
+| **Formulário de lead** | Interesse pré-selecionado por vertical; envio ao Laravel — [formulario-contato-lead-slc.md](formulario-contato-lead-slc.md), [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md) §6. |
+
+---
+
+## Semântica
+
+- **Um H1** por página de vertical; blocos “O que entregamos” com **H2** ou lista estruturada conforme o design system.
+- Breadcrumbs: Início → Serviços → [Nome da vertical].
+
+---
+
+## conhecimento/exemplo-fixture-case-enterprise-slc.md
+
+# Exemplo de fixture — Case study “Enterprise” (JSON)
+
+**Finalidade:** validar **robustez do layout** no Astro com um payload completo do contrato **`CaseStudy`** ([contrato-api-build-time-slc.md](contrato-api-build-time-slc.md) §2.2): SEO, métricas, imagem com dimensões e HTML rico — alinhado ao [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md) (cases: problema → solução → resultado), [conteudo-mensagens-referencia.md](conteudo-mensagens-referencia.md) (métricas e autoridade), referência [Venturus](referencia-layout-sites.md) para blocos numéricos, e [projeto-astro-laravel-institutional.md](projeto-astro-laravel-institutional.md) (JSON-LD `Organization` / `ProfessionalService`).
+
+**Dados fictícios** — não representam cliente real; substituir em produção.
+
+---
+
+## JSON de exemplo
+
+```json
+{
+  "id": "uuid-slc-2024-001",
+  "slug": "modernizacao-plataforma-logistica-ai",
+  "status": "published",
+  "featured": true,
+
+  "title": "Modernização de ecossistema logístico com arquitetura de micro-serviços",
+  "customer_name": "LogTech Brasil S.A.",
+  "sector": "Logística e transportes",
+  "short_summary": "Redução drástica de downtime e escalabilidade para suportar +200% de volume de pedidos em datas sazonais.",
+
+  "content_html": "<section><h2>O desafio</h2><p>A LogTech enfrentava gargalos críticos durante a Black Friday, com latência de API superior a 2 segundos e quedas constantes no processamento de pedidos.</p></section><section><h2>Nossa solução</h2><p>Implementamos uma nova camada de backend em <strong>Laravel 12</strong> integrada a um frontend <strong>Astro</strong> (SSG) para consultas rápidas. A infraestrutura foi orquestrada em <strong>Docker Swarm</strong>, alinhada à base de publicação da SLC.</p></section><section><h2>O resultado</h2><p>O sistema foi entregue em 75 dias (fase 1), permitindo que a empresa operasse com 99,9% de uptime no período de maior carga do ano.</p></section>",
+
+  "metrics": [
+    { "label": "Redução de latência", "value": "85%" },
+    { "label": "Aumento de conversão", "value": "12%" },
+    { "label": "Tempo de entrega (MVP)", "value": "75 dias" }
+  ],
+
+  "main_image": {
+    "url": "https://api.sousalimaconsultoria.com.br/storage/cases/logtech-hero.png",
+    "alt": "Dashboard de monitoramento logístico em tempo real desenvolvido pela Sousa Lima Consultoria",
+    "width": 1200,
+    "height": 630
+  },
+
+  "seo": {
+    "meta_title": "Case LogTech: modernização de software | Sousa Lima Consultoria",
+    "meta_description": "Veja como a SLC ajudou a LogTech a reduzir o tempo de resposta em 85% e escalar a operação para a Black Friday.",
+    "og_image": "https://api.sousalimaconsultoria.com.br/storage/cases/og-logtech.png",
+    "keywords": [
+      "Consultoria de software",
+      "Laravel",
+      "Astro SSG",
+      "Docker Swarm",
+      "Logística"
+    ]
+  }
+}
+```
+
+*(Domínio da API alinhado a [dominios-e-ambiente.md](../definicoes/dominios-e-ambiente.md); ajustar ambiente de staging se necessário.)*
+
+---
+
+## Notas para teste de layout no Astro
+
+| Tema | Orientação |
+|------|------------|
+| **Performance (LCP / CLS)** | Usar `main_image.width` e `main_image.height` no **`<Image />` do Astro** para reservar espaço e limitar CLS — [qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md), [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md). |
+| **Acessibilidade** | Repassar `main_image.alt` ao elemento de imagem (ou equivalente otimizado) para **WCAG 2.1 AA** — [projeto-astro-laravel-institutional.md](projeto-astro-laravel-institutional.md). |
+| **Métricas B2B** | O array `metrics` alimenta blocos de credibilidade no estilo enterprise ([Venturus](referencia-layout-sites.md)); coerente com [conteudo-mensagens-referencia.md](conteudo-mensagens-referencia.md). |
+| **SEO** | `seo` gera meta tags; combinar com **JSON-LD** (`Organization`, `ProfessionalService`, `LocalBusiness` quando aplicável) no template da página de case — [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md), [projeto-astro-laravel-institutional.md](projeto-astro-laravel-institutional.md). |
+| **HTML rico** | `content_html` deve ser **sanitizado no Laravel** e renderizado no Astro com cuidado (XSS / CSP) — [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md) §5. |
+
+Este fixture pode ser salvo como ficheiro em `src/fixtures/` ou usado em testes E2E quando o repositório Astro existir.
+
+---
+
+## conhecimento/formulario-contato-lead-slc.md
+
+# Formulário de contato segmentado — leads B2B
+
+Proposta para **fechar o ciclo de conversão** nas páginas de serviço e no [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md) (`/contato`). O formulário é uma **ilha de interatividade** no **Astro** (React + Shadcn ou componente nativo com JS mínimo), enviando dados ao **Laravel** em tempo de execução (**não** no build SSG).
+
+Alinhado a [copy-servicos-verticais-v1-slc.md](copy-servicos-verticais-v1-slc.md), [diretrizes-qualidade-site-slc.md](../definicoes/diretrizes-qualidade-site-slc.md), [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md), [qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md) e [projeto-astro-laravel-institutional.md](projeto-astro-laravel-institutional.md).
+
+---
+
+## 1. Estrutura UX e conversão
+
+O formulário deve ser **contextual**: o campo de **interesse** vem **pré-selecionado** conforme a vertical da página atual (ex.: página de Software → “Desenvolvimento de software / MVP”).
+
+### Dados de identificação
+
+| Campo | Regra |
+|-------|--------|
+| **Nome completo** | Texto, obrigatório. |
+| **E-mail corporativo** | Obrigatório; validação para **preferir domínio empresarial** (heurística ou lista de domínios genéricos a alertar — reforço B2B). |
+| **Empresa** | Obrigatório. |
+| **Cargo** | Obrigatório (qualificação **enterprise**). |
+
+### Segmentação de interesse (select)
+
+| Valor enviado à API (`interest`) | Rótulo ao utilizador |
+|----------------------------------|----------------------|
+| `process` | Consultoria de processos |
+| `software` | Desenvolvimento de software / MVP |
+| `cloud` | Cloud e infraestrutura |
+
+Pré-seleção por rota: mapear `/servicos/...` → um dos três valores.
+
+### Qualificação de projeto
+
+| Campo | Opções |
+|-------|--------|
+| **Estágio do negócio** | Ideação · Validação · Escala · Operação consolidada (valores estáveis no JSON abaixo). |
+| **Mensagem / desafio** | Texto livre (problema técnico ou de negócio). |
+
+---
+
+## 2. Implementação técnica (Astro + Laravel)
+
+| Tema | Orientação |
+|------|------------|
+| **Ilha** | `client:visible` ou `client:load` apenas no bloco do formulário para não inflacionar JS na primeira pintura — favorece **LCP** e **INP**. |
+| **Feedback (INP)** | Estado “A carregar…” / “Enviado” visível em **menos de 100 ms** após o envio — [diretrizes-qualidade-site-slc.md](../definicoes/diretrizes-qualidade-site-slc.md). |
+| **Acessibilidade (WCAG 2.1 AA)** | Cada campo com **`<label>`** associado (`for`/`id`); erros com texto claro e **contraste** adequado — [projeto-astro-laravel-institutional.md](projeto-astro-laravel-institutional.md). |
+| **LGPD** | Checkbox obrigatória: *“Li e aceito a [Política de privacidade](/politica-de-privacidade)”* (link real); sem marcar, não envia — [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md). |
+| **Segurança** | **CSRF** (token Laravel / cookie de sessão ou Sanctum conforme desenho); **reCAPTCHA v3** (ou equivalente) preferencialmente **carregado após** primeira interação no formulário ou sob consentimento, para não prejudicar **LCP** na página. |
+
+---
+
+## 3. Endpoint — `POST /api/v1/lead/contact`
+
+**Uso:** submissão pública de lead (runtime). Autenticação: conforme política (ex.: apenas CSRF + rate limit + captcha; **não** usar `API_READ_TOKEN` do build).
+
+### Corpo JSON (contrato mínimo + campos alinhados ao UX)
+
+```json
+{
+  "name": "string",
+  "email": "string",
+  "company": "string",
+  "job_title": "string",
+  "interest": "process | software | cloud",
+  "business_stage": "ideation | validation | scale | operations",
+  "message": "string",
+  "consent_lgpd": true,
+  "source_path": "/servicos/desenvolvimento-software"
+}
+```
+
+| Campo | Obrigatório | Notas |
+|-------|-------------|--------|
+| `name`, `email`, `company`, `job_title` | Sim | B2B. |
+| `interest` | Sim | Enum alinhado ao select. |
+| `business_stage` | Sim | Alinha MVP ao estágio. |
+| `message` | Recomendado | Pode ser obrigatório no front. |
+| `consent_lgpd` | Sim | Deve ser `true` para aceitar. |
+| `source_path` | Opcional | Rota de origem para analytics e CRM. |
+
+Versão **mínima** se o primeiro slice for mais enxuto (compatível com a proposta inicial):
+
+```json
+{
+  "name": "string",
+  "email": "string",
+  "company": "string",
+  "interest": "software",
+  "message": "string",
+  "consent_lgpd": true
+}
+```
+
+Evoluir para o corpo completo quando `job_title` e `business_stage` estiverem no front.
+
+### Respostas esperadas
+
+- **201** — lead criado; corpo opcional com `id` do lead.
+- **422** — erros de validação (campos por chave).
+- **429** — rate limit.
+
+---
+
+## 4. Relação com o restante da documentação
+
+- Contrato agregado da API: [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md) §6.
+- CORS e `APP_URL` do site: [dominios-e-ambiente.md](../definicoes/dominios-e-ambiente.md).
+
+Com isto, o fluxo **página de serviço → CTA → formulário → Laravel** fica especificado para implementação nos **dois repositórios**.
+
+---
+
+## conhecimento/guia-copy-juridico-lgpd-slc.md
+
+# Guia — copy, jurídico e cookies (LGPD)
+
+Documento operacional para alinhar **conteúdo editorial**, **conformidade legal** e **implementação técnica** do site institucional da Sousa Lima Consultoria. Complementa [conteudo-juridico-semente.md](../definicoes/conteudo-juridico-semente.md), [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md) e [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md).
+
+---
+
+## 1. Copy (textos do site)
+
+### O que é
+
+**Copywriting:** textos persuasivos e informativos (quem somos, serviços, diferenciais, CTAs) que substituem **placeholders** e referências iniciais ([copy-home-v1-slc.md](copy-home-v1-slc.md), [copy-servicos-verticais-v1-slc.md](copy-servicos-verticais-v1-slc.md)).
+
+### O que contemplar
+
+| Área | Entregável |
+|------|------------|
+| **Tom e posicionamento** | Voz alinhada à marca (enterprise, clareza, sem jargão vazio); coerência com [conteudo-mensagens-referencia.md](conteudo-mensagens-referencia.md). |
+| **Substituição de placeholders** | KPIs com “X%”, prazos e uptime só com base real ou reformulação sem promessa numérica frágil. |
+| **SEO on-page** | Títulos únicos por página, meta descriptions, alinhamento a [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md) (slugs finais). |
+| **Prova e credibilidade** | Cases, números e depoimentos só com autorização e factualidade. |
+| **Formulários e CTAs** | Coerência com [formulario-contato-lead-slc.md](formulario-contato-lead-slc.md) (campos, LGPD). |
+
+### Critério de “pronto”
+
+- Textos **originais** (não copiar Sagitta/Venturus nem terceiros).
+- Revisão interna de negócio (SLC) antes de jurídico onde houver promessa ou dados sensíveis.
+
+---
+
+## 2. Jurídico (políticas e termos)
+
+### O que é
+
+Documentos que definem **como** a SLC trata dados pessoais e **quais** são as regras de uso do site/serviços. Devem ser **redigidos ou validados por profissional habilitado** (advogado).
+
+### O que contemplar
+
+| Documento | Finalidade típica |
+|-----------|---------------------|
+| **Política de privacidade** | Bases legais, finalidades do tratamento, direitos do titular, contato do encarregado/DPO se aplicável, cookies na medida em que identifiquem pessoas. |
+| **Termos de uso** | Uso do site, limitações de responsabilidade (com limites legais), propriedade intelectual, lei aplicável. |
+| **Política de cookies** | Lista/categorias de cookies e tecnologias similares, finalidades, como gerir preferências (ligada ao banner). |
+
+### Processo recomendado
+
+1. **Rascunho** a partir da stack real (Laravel, formulários, e-mail, analytics previstos).
+2. **Revisão jurídica** (contrato ou consultoria pontual).
+3. **Publicação** em URLs estáveis (ex.: `/politica-de-privacidade`, `/termos-de-uso`, `/politica-de-cookies`) e links no rodapé e no fluxo de consentimento.
+4. **Registos internos** da SLC: registro de operações de tratamento (ROPA) e canal de titulares, conforme política da empresa.
+
+### O que esta documentação **não** faz
+
+Não fornece modelos legais prontos — apenas estrutura o que deve existir e onde encaixa no projeto.
+
+---
+
+## 3. Cookies e LGPD (implementação técnica)
+
+### O que é
+
+Além do **texto** da política, a LGPD exige **controle técnico**: não tratar dados por cookies/scripts **não essenciais** sem consentimento válido.
+
+### O que contemplar (checklist técnico)
+
+| Requisito | Detalhe |
+|-----------|---------|
+| **Banner de consentimento** | Primeira camada: informar categorias (necessários, preferências, analytics, marketing conforme o caso). |
+| **Gate de scripts** | Scripts de analytics (ex.: Google Analytics), tags de marketing e similares **só** após opt-in na categoria correspondente — ver [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md). |
+| **Scripts estritamente necessários** | Ex.: sessão, CSRF, equilíbrio de carga — documentar como “necessários” e não sujeitos a opt-in, conforme parecer jurídico. |
+| **Persistência da escolha** | Cookie/local seguro ou backend; respeitar em visitas seguintes. |
+| **Revogação / alteração** | Link “Gerir cookies” (ou equivalente) no rodapé. |
+| **CSP** | Content-Security-Policy alinhada às origens realmente usadas após consentimento — [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md). |
+
+### Ferramentas possíveis
+
+Solução **própria** (banner + carregamento condicional no Astro) ou **terceira** (Cookiebot, OneTrust, Osano, etc.) desde que implementem a mesma lógica de **bloqueio prévio**.
+
+### Ligação com o formulário de leads
+
+Checkbox de consentimento alinhada à política — [formulario-contato-lead-slc.md](formulario-contato-lead-slc.md).
+
+---
+
+## Documentos relacionados
+
+| Documento | Conteúdo |
+|-----------|-----------|
+| [dominios-e-ambiente.md](../definicoes/dominios-e-ambiente.md) | Domínio canônico (apex). |
+| [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md) | Consent Mode, analytics, CSP. |
+| [planejamento-e-faltantes-site-institucional.md](planejamento-e-faltantes-site-institucional.md) | Checklist do projeto. |
+
+---
+
+## conhecimento/integracao-astro-ssg-laravel.md
+
+# Integração Astro (SSG) + Laravel — conteúdo e builds
+
+O **site (Astro)** e o **admin (Laravel)** vivem em **repositórios separados** (não monorepo). O contrato entre eles é a **API** (URL base, autenticação de build se houver, formato JSON) e a **orquestração de CI** (webhook de um lado disparando pipeline do outro).
+
+## Comportamento do SSG
+
+No **Static Site Generation**, o Astro **consome a API Laravel (ou endpoints de conteúdo) apenas no momento do `build`**, não em cada visita do usuário. O HTML gerado é estático até o próximo deploy.
+
+## Risco: site estático desatualizado
+
+Se o conteúdo institucional (blog, serviços, cases) for gerido no **Laravel** e o Astro só buscar dados no build, **alterações no banco não aparecem no site** até que um **novo build** seja executado e publicado.
+
+## Estratégias recomendadas
+
+| Estratégia | Descrição |
+|------------|-----------|
+| **Webhook + CI/CD** | Ao salvar/publicar conteúdo no **admin (Laravel)**, disparar evento que aciona o **pipeline do repositório do frontend** (ex.: `repository_dispatch` no GitHub, pipeline filho no GitLab, ou URL de deploy) para **build Astro + deploy** (Swarm). Exige segredos/token entre os dois repos. |
+| **Rebuild agendado** | Cron que roda build/deploy em intervalo fixo (menos imediato, mais simples). |
+| **Rebuild manual** | Aceitável em fases iniciais; documentar o processo. |
+| **SSR ou ISR no Astro** | Alternativa arquitetural: páginas dinâmicas ou revalidação incremental — **muda premissas** de custo e infra; avaliar se o ganho justifica sair do SSG puro. |
+
+## Contrato de API (build time)
+
+Detalhes normativos: endpoints (`GET /api/v1/content/slugs`), interfaces TypeScript, imagens (width/height), webhook de publicação, **Bearer** no build e sanitização — ver **[contrato-api-build-time-slc.md](contrato-api-build-time-slc.md)**.
+
+## Resumo
+
+- **SSG** = API no **build**, não no browser para conteúdo pré-renderizado.
+- **Webhook (ou equivalente)** é a forma típica de não deixar o site “congelado” em relação ao Laravel.
+- Ver também [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md), [planejamento-e-faltantes-site-institucional.md](planejamento-e-faltantes-site-institucional.md) e [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md).
+
+---
+
+## conhecimento/mapa-site-mvp-slc.md
+
+# Mapa do site — MVP institucional SLC
+
+Proposta alinhada a [diretrizes-qualidade-site-slc.md](../definicoes/diretrizes-qualidade-site-slc.md), [planejamento-e-faltantes-site-institucional.md](planejamento-e-faltantes-site-institucional.md), referências [Sagitta Digital](https://sagittadigital.com.br/) / [Venturus](https://www.venturus.org.br/) ([referencia-layout-sites.md](referencia-layout-sites.md)) e [conteudo-mensagens-referencia.md](conteudo-mensagens-referencia.md).
+
+**Foco:** performance (PSI, Core Web Vitals), conversão **B2B** e autoridade institucional.
+
+As **URLs** são sugestão; fechar slugs no admin e no `GET /api/v1/content/slugs` — [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md).
+
+**Host canónico:** `https://sousalimaconsultoria.com.br` (sem `www`); redirecionamento de `www` no edge — [dominios-e-ambiente.md](../definicoes/dominios-e-ambiente.md).
+
+---
+
+## Visão geral — navegação principal
+
+| Rota | Papel |
+|------|--------|
+| `/` | Home (conversão principal) |
+| `/servicos`, `/servicos/[slug]` | Serviços (visão geral + páginas internas) |
+| `/cases`, `/cases/[slug]` | Portfólio e case individual |
+| `/sobre` | Institucional |
+| `/blog` ou `/insights` (+ `/[slug]`) | Conteúdo / SEO |
+| `/contato` | Lead B2B |
+
+Políticas e rodapé técnico: ver [§ Rodapé e compliance](#5-rodapé-e-compliance-lgpd).
+
+---
+
+## 1. Home — página de conversão principal
+
+Estrutura: **promessa → método → prova** (conversão + credibilidade).
+
+**Copy v1 proposta (textos):** [copy-home-v1-slc.md](copy-home-v1-slc.md).
+
+| Bloco | Conteúdo |
+|-------|----------|
+| **Hero** | Proposta de valor clara; **CTA** primário e secundário — ver copy v1. |
+| **Serviços (resumo)** | Cards compactos com **ícone**, título e descrição curta das verticais **Consultoria**, **Software**, **Cloud**; link para `/servicos` e para cada vertical. |
+| **Metodologia (diferencial)** | Foco em **MVP** e entregas em **ciclos** (faixa **30–90 dias** como referência de mercado) para reduzir receio de “projeto infinito” — coerente com [conteudo-mensagens-referencia.md](conteudo-mensagens-referencia.md). |
+| **Prova social** | Números agregados (**+clientes**, **+projetos**, etc., quando houver base) + **faixa de logotipos** (marcas autorizadas). |
+| **Depoimentos / FAQ** | Credibilidade e esclarecimento de objeções **perto do rodapé** (estilo referência Sagitta: depoimentos + FAQ). |
+
+---
+
+## 2. Serviços — arquitetura “enterprise”
+
+Inspirado no modelo de autoridade por linhas (referência Venturus), adaptado à SLC.
+
+**Copy v1 das três verticais:** [copy-servicos-verticais-v1-slc.md](copy-servicos-verticais-v1-slc.md).
+
+| Página | Função |
+|--------|--------|
+| **Landing `/servicos`** | Visão geral das competências; entrada para as verticais. |
+| **Consultoria de processos** `/servicos/[slug]` | Eficiência, redução de retrabalho, alinhamento a negócio (ajustar slug final). |
+| **Desenvolvimento de software (MVP)** | Processo ágil, entregas incrementais; menção a stack quando fizer sentido (**Laravel**, **React**, etc.) — alinhado ao [stack-tecnico-slc.md](../definicoes/stack-tecnico-slc.md). |
+| **Cloud e infraestrutura** | Disponibilidade, segurança; exemplos: **Docker Swarm**, **TLS**, boas práticas de deploy — coerente com [base-publicacao.md](base-publicacao.md). |
+
+Cada interna: entregas, diferenciais, CTA para contato; **breadcrumbs** obrigatórios (lista → interna).
+
+---
+
+## 3. Cases de sucesso (portfólio)
+
+| Página | Função |
+|--------|--------|
+| **Lista `/cases`** | Galeria: título, **tags** de tecnologia/setor, **tempo de leitura** (opcional), imagem de capa. |
+| **Case `/cases/[slug]`** | Estrutura sugerida: **Problema → Solução → Resultado numérico** (ex.: “redução de Y% no tempo de processamento”), com autorização do cliente. |
+
+**Navegação:** **breadcrumbs** obrigatórios (Início → Cases → Título do case).
+
+---
+
+## 4. Institucional e autoridade
+
+| Página | Função |
+|--------|--------|
+| **Sobre a SLC** `/sobre` | História, posicionamento **consultivo** (“parceiro, não apenas fornecedor”), valores e time (se aplicável). |
+| **Blog / Insights** | Artigos técnicos e de negócio para **SEO semântico**; definir **um** slug raiz (`/blog` **ou** `/insights`). |
+| **Contato** `/contato` | Formulário **segmentado** B2B (empresa, cargo, interesse, estágio, mensagem, LGPD) — [formulario-contato-lead-slc.md](formulario-contato-lead-slc.md); [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md). |
+
+---
+
+## 5. Rodapé e compliance (LGPD)
+
+| Elemento | Detalhe |
+|-----------|---------|
+| **Navegação secundária** | Atalhos para as principais seções (serviços, cases, sobre, blog, contato). |
+| **Área legal** | Links para **Política de privacidade**, **Termos de uso**, **Política de cookies** (URLs sugeridas: `/politica-de-privacidade`, `/termos-de-uso`, `/cookies`). |
+| **Gestão de cookies** | **Implementação técnica**: botão flutuante ou link persistente para **revogar/ajustar** consentimento — [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md). |
+| **Dados institucionais** | CNPJ, endereço (se público), redes sociais; coerente com JSON-LD — [projeto-astro-laravel-institutional.md](projeto-astro-laravel-institutional.md). |
+
+---
+
+## 6. SEO e acessibilidade (padrão global)
+
+| Requisito | Detalhe |
+|-----------|---------|
+| **Breadcrumbs** | Obrigatórios em **serviços** (lista → interna) e **cases** (lista → interna); recomendados onde houver profundidade de URL. |
+| **JSON-LD** | **`Organization`**, **`ProfessionalService`**, **`LocalBusiness`** quando aplicável. |
+| **Semântica HTML5** | `header`, `nav`, `main`, `section`, `footer`; **um `h1`** por página. |
+| **Performance** | Imagens com `<Image />` Astro, metas LCP/CLS — [qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md), [diretrizes-qualidade-site-slc.md](../definicoes/diretrizes-qualidade-site-slc.md). |
+
+---
+
+## Evolução pós-MVP
+
+Novas seções (carreiras, parcerias, materiais ricos) após validação de métricas e operação do admin.
+
+---
+
+## conhecimento/normas-arquitetura-backend-infra.md
+
+# Normas de arquitetura — backend e infraestrutura
+
+Normas para o site e serviços web da **Sousa Lima Consultoria**, alinhadas a [qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md) (LCP, TBT, INP) e à [base de publicação](base-publicacao.md).
+
+## 1. Prioridade SSG / ISR
+
+| Diretriz | Detalhe |
+|----------|---------|
+| **Páginas institucionais e de cases** | Preferir **SSG** (Static Site Generation) ou **ISR** (Incremental Static Regeneration), conforme o framework adotado (ex.: Next.js, Nuxt, Astro, etc.). |
+| **Objetivo** | HTML pré-renderizado em CDN/edge, **TTFB** baixo e melhor previsibilidade de cache. |
+| **Exceções** | Páginas fortemente dinâmicas ou áreas autenticadas podem usar SSR/CSR; justificar desvio do padrão. |
+
+Conteúdo vindo do **Laravel** para site **Astro SSG**: a API é usada **no build**; é preciso **rebuild/deploy** quando o CMS mudar — ver [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md).
+
+## 2. Pipeline de imagens
+
+| Diretriz | Detalhe |
+|----------|---------|
+| **Marcação** | Servir imagens com **`<picture>`** (`<source type="image/avif">`, `<source type="image/webp">`, `<img>` fallback) quando houver mais de um formato. |
+| **Formatos** | **WebP** e **AVIF** como preferência; JPEG/PNG quando necessário para compatibilidade. |
+| **Responsivo** | **`srcset`** e **`sizes`** (ou serviço de resize/ CDN) para dimensionamento **dinâmico** por viewport e DPR. |
+| **Ligação com LCP** | O elemento LCP costuma ser imagem; priorizar o recurso crítico (tamanho, formato, prioridade de carregamento). Ver [qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md). |
+| **API → Astro (build)** | Contrato de conteúdo deve expor **dimensões** (`width` / `height`) junto à URL da imagem para reservar espaço e reduzir CLS — ver [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md). |
+
+## 3. Scripts de terceiros (sandboxing e performance)
+
+| Diretriz | Detalhe |
+|----------|---------|
+| **Carregamento** | Scripts não essenciais (ex.: **GTM**, **Analytics**) com **`defer`** ou carregamento **após** interação / consentimento (LGPD), evitando bloqueio na análise inicial. |
+| **Main thread** | Reduzir impacto em **TBT** e **INP**: evitar scripts síncronos na cabeça; considerar **offload para Web Worker** (ex.: [Partytown](https://partytown.builder.io/) ou equivalente) quando a stack permitir — nem todo tag manager roda em worker sem ajuste de CSP e integração. |
+| **Política** | Novos terceiros passam por revisão (necessidade, peso, alternativa mais leve). |
+
+## 4. Cabeçalhos de segurança
+
+| Diretriz | Detalhe |
+|----------|---------|
+| **CSP** — Content Security Policy | Política **explícita** (`default-src`, `script-src`, `style-src`, `img-src`, `connect-src`, `frame-src`…). Ajustar **fontes** para scripts de analytics e GTM (hashes, nonces ou hosts permitidos); testar em staging antes de produção. |
+| **HSTS** | HTTP Strict Transport Security em produção (HTTPS obrigatório); prazo e `includeSubDomains` conforme domínio e subdomínios. |
+| **`X-Frame-Options`** ou **`frame-ancestors`** | Evitar clickjacking; em conjunto com CSP, preferir `frame-ancestors` na CSP quando unificado. |
+| **Marca** | Proteção contra injeção de conteúdo e framing indevido; alinhar com time de marketing para não quebrar embeds legítimos. |
+
+## Revisão
+
+Atualizar este documento quando a stack (framework, CDN, provedor de DNS) estiver fechada e após a primeira auditoria de segurança e performance.
+
+---
+
+## conhecimento/planejamento-e-faltantes-site-institucional.md
+
+# Planejamento e faltantes — site institucional SLC
+
+Atualizado conforme decisões de produto e stack. Referências: [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md), [stack-tecnico-slc.md](../definicoes/stack-tecnico-slc.md), [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md), [projeto-astro-laravel-institutional.md](projeto-astro-laravel-institutional.md), [conteudo-juridico-semente.md](../definicoes/conteudo-juridico-semente.md).
+
+---
+
+## Decisões já tomadas
+
+| Tema | Decisão |
+|------|---------|
+| **Conteúdo / jurídico** | Primeira versão guiada pelos **perfis** da tabela *Referências* em [referencia-layout-sites.md](referencia-layout-sites.md); textos finais e políticas com revisão legal. Detalhe em [conteudo-juridico-semente.md](../definicoes/conteudo-juridico-semente.md). |
+| **Logo** | Arquivo oficial (SEO): `docs/sousa-lima-consultoria-logo-horizontal-colorido.png`. |
+| **Código** | **Dois repositórios distintos** (não monorepo): **frontend** = site Astro + Tailwind; **admin** = Laravel + **Filament** + Tailwind — ver [stack-tecnico-slc.md](../definicoes/stack-tecnico-slc.md). |
+| **Produto** | **Área do cliente** fica **para depois**. |
+| **Infra (agora)** | Foco em **publicar com Docker Swarm** ([base-publicacao.md](base-publicacao.md)). |
+| **Compliance** | Consentimento com **implementação técnica** (gate de scripts), não só texto — [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md). |
+| **Pós go-live** | Search Console, sitemap, monitoramento — **fase posterior**. |
+| **Mapa do site (MVP)** | Estrutura de navegação, rodapé legal e padrões SEO/a11y — [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md). |
+| **Leads (contato)** | Formulário segmentado + `POST /api/v1/lead/contact` — [formulario-contato-lead-slc.md](formulario-contato-lead-slc.md). |
+| **URL canónica** | **`https://sousalimaconsultoria.com.br`** (apex); `www` redireciona com 301 — [dominios-e-ambiente.md](../definicoes/dominios-e-ambiente.md), [`deploy/slc.yaml`](../../deploy/slc.yaml) (Traefik). |
+| **Design (Figma)** | **Sem** biblioteca Figma obrigatória; entregas baseadas no **designer** (alinhamento à [paleta](../definicoes/paleta-cores.md), Bento/glass conforme [projeto-astro-laravel-institutional.md](projeto-astro-laravel-institutional.md)). |
+| **PSI / WCAG / JSON-LD** | Seguir **melhores práticas** já documentadas ([qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md), [diretrizes-qualidade-site-slc.md](../definicoes/diretrizes-qualidade-site-slc.md), [projeto-astro-laravel-institutional.md](projeto-astro-laravel-institutional.md)); **iterar** após go-live com medições reais. |
+
+---
+
+## Fases sugeridas (ordem lógica)
+
+| Fase | Entregas | Notas |
+|------|----------|--------|
+| **1. Conteúdo + compliance** | [Mapa MVP](mapa-site-mvp-slc.md) como base; copy v1, políticas; **banner/categorias** de cookies implementáveis | LGPD exige técnica + jurídico |
+| **2. Design** | UI (Bento + glass + [paleta](../definicoes/paleta-cores.md)); validar **contraste AA** com glass | Ver checklist qualidade |
+| **3. Institucional Astro** | SSG, `fetch` no **build**, contrato de API, **webhook/CI** para rebuild ao mudar CMS | Ver [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md) |
+| **4. Admin Laravel** | Repositório separado: API + painel **Filament**; consumido pelo build do **outro** repo (Astro) | Paralelo ou após MVP do site |
+| **5. Qualidade** | PSI, WCAG, JSON-LD, assets | Checklist abaixo |
+| **6. Go-live Swarm** | Stack, TLS, DNS, **healthcheck**, secrets | [dominios-e-ambiente.md](../definicoes/dominios-e-ambiente.md) |
+
+---
+
+## Integração Astro + Laravel (SSG) — validação
+
+- Com **SSG**, a API é consumida **só no build**. Sem **rebuild/deploy** após alterar conteúdo no Laravel, o site **não** reflete o banco.
+- **Recomendado:** **webhook** no **admin (Laravel)** disparando o **CI do repositório do frontend** (build Astro + deploy Swarm). Em dois repos, usar **dispatch** entre GitHub/GitLab ou endpoint de deploy com segredo. Alternativas: cron, manual — ver [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md).
+- O **contrato de API** (tipos, campos) continua necessário para o build ser **reproduzível** e tipado (TypeScript).
+
+---
+
+## Stack Laravel + Filament — validação
+
+- Padrão definido: **Laravel + Filament** para o painel admin (conteúdo e operação), com API versionada para consumo do frontend Astro.
+- **Next.js** só faria sentido como **aplicação separada** (micro-serviço), integrada por API — não documentado como padrão SLC.
+
+---
+
+## Checklist — o que ainda falta (institucional)
+
+### Conteúdo e legal
+
+- [ ] **URLs e slugs** finais alinhados ao [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md) (ajustes após copy e jurídico).
+- [ ] **Copy** revisada: [copy-home-v1-slc.md](copy-home-v1-slc.md), [copy-servicos-verticais-v1-slc.md](copy-servicos-verticais-v1-slc.md) (KPIs X%, uptime; promessas com base real; tom final).
+- [ ] Políticas revisadas por advogado; **consentimento de cookies** implementado conforme [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md) e [guia-copy-juridico-lgpd-slc.md](guia-copy-juridico-lgpd-slc.md).
+
+### Design
+
+- [ ] Entregas do **designer** alinhadas à [paleta](../definicoes/paleta-cores.md) e às diretrizes (Bento, glass) — **sem** obrigatoriedade de ficheiro Figma no repositório.
+- [x] **www** canónico: apex principal — [dominios-e-ambiente.md](../definicoes/dominios-e-ambiente.md).
+
+### Código
+
+- [ ] **Repositório frontend (site):** Astro + Tailwind; CI próprio (build, artefato estático).
+- [x] **Repositório admin:** Laravel + Filament; API e painel base em `/admin`; CI próprio (testes, deploy).
+- [ ] **Contrato de API** implementado conforme [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md) (slugs, interfaces TS, imagens com `width`/`height`, `API_READ_TOKEN`, payload do webhook; leads em [formulario-contato-lead-slc.md](formulario-contato-lead-slc.md) / §6).
+- [ ] **Webhook / dispatch** do admin para acionar **pipeline do frontend** quando conteúdo mudar ([integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md)).
+- [ ] **Painel Filament:** publicar assets e executar migrations do painel em todos os ambientes (`php artisan filament:install`, `php artisan migrate`).
+- [ ] **Acesso admin:** definir `FILAMENT_ADMIN_EMAILS` e processo de onboarding/rotação de utilizadores.
+- [ ] **Otimização de assets:** uso do **`<Image />` do Astro** para logo e imagens (WebP/AVIF, dimensões) — metas PSI ([projeto-astro-laravel-institutional.md](projeto-astro-laravel-institutional.md)).
+- [ ] Implementação e testes de performance (PSI).
+
+### Qualidade (acréscimos)
+
+- [ ] **WCAG:** validar **contraste** da [paleta](../definicoes/paleta-cores.md), especialmente com **glassmorphism** e fundos variáveis — iterar após primeiro deploy.
+- [ ] **Schema.org:** JSON-LD **`Organization`** e **`ProfessionalService`** (e `LocalBusiness` se aplicável) no Astro ([projeto-astro-laravel-institutional.md](projeto-astro-laravel-institutional.md)) — seguir boas práticas; refinar com dados reais.
+- [ ] **PSI / Core Web Vitals:** medir no ambiente real e melhorar incrementalmente ([qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md)).
+
+### Infra
+
+- [x] `docker stack deploy` documentado — [procedimento-deploy-producao-slc.md](procedimento-deploy-producao-slc.md).
+- [x] **Healthcheck** em todos os serviços do [`deploy/slc.yaml`](../../deploy/slc.yaml) (nginx, PHP, Postgres, Redis).
+- [x] **Scheduler** Laravel — serviço `scheduler` no `slc.yaml` (1 réplica).
+- [ ] Aplicar snippet de [`deploy/laravel/README.md`](../../deploy/laravel/README.md) no repositório **admin** (`config/database.php`).
+- [ ] **SMTP (Microsoft 365):** `MAIL_USERNAME` no `slc.yaml`; secret `slc_sousalima_smtp_password`; `config/mail.php` a ler `MAIL_PASSWORD_FILE` — [deploy/laravel/README.md](../../deploy/laravel/README.md).
+- [ ] **CI/CD** em **cada** repositório (frontend: build Astro + deploy; admin: testes Laravel + deploy API/painel).
+- [ ] Secrets e variáveis em produção.
+
+### Explicitamente fora do momento
+
+- **Área do cliente** (fase posterior).
+- **Pós go-live** ampliado (Search Console contínuo, etc.).
+
+---
+
+## Próximo passo recomendado
+
+(1) [guia-copy-juridico-lgpd-slc.md](guia-copy-juridico-lgpd-slc.md) — copy final + jurídico + banner/gate de cookies; (2) consolidar painel **Filament** (acessos, resources, webhook de publicação); (3) CI em cada repo; (4) após deploy, PSI/WCAG/JSON-LD com medição e iteração.
+
+Atualize os checklists quando itens forem concluídos.
+
+---
+
+## conhecimento/procedimento-deploy-producao-slc.md
+
+# Procedimento de deploy — produção (SLC)
+
+Runbook para publicar o site estático (Astro), ficheiros públicos Laravel, API/admin (Laravel) e worker no **Docker Swarm**, atrás de **Traefik** com **Let’s Encrypt**. Alinhado a [base-publicacao.md](base-publicacao.md), [stack-tecnico-slc.md](../definicoes/stack-tecnico-slc.md), [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md) e [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md).
+
+**Stack da aplicação (este repositório):** [`deploy/slc.yaml`](../../deploy/slc.yaml) — stack nomeada **`slc`**.
+
+**Proxy Traefik:** em geral vive noutro caminho no servidor (ex.: `/srv/swarm/proxy.yml`); tem de expor os entrypoints `web` / `websecure` e o resolver ACME **`le`**, igual às labels do `slc.yaml`.
+
+---
+
+## 1. Arquitetura resumida
+
+| Camada | Função |
+|--------|--------|
+| **Traefik** | TLS (ACME), HTTP→HTTPS, roteamento por `Host`. |
+| **frontend** | nginx com artefactos Astro em bind mount (SSG). |
+| **static** | nginx a servir `storage/app/public` (uploads / públicos Laravel). |
+| **app** | Laravel (API + Filament/Inertia). |
+| **queue** | `php artisan queue:work`. |
+| **scheduler** | `php artisan schedule:work` — **1 réplica**. |
+| **postgres** | PostgreSQL 16; dados em `/srv/sistemas/slc/data/postgres` (bind mount). |
+| **redis** | Redis 7 com AOF; dados em `/srv/sistemas/slc/data/redis` (bind mount). |
+
+**Healthchecks:** todos os serviços têm `healthcheck` no [`deploy/slc.yaml`](../../deploy/slc.yaml) — nginx via `nginx -t`, PHP via `php artisan about`, Postgres `pg_isready`, Redis `redis-cli ping`.
+
+---
+
+## 2. Domínios e DNS
+
+Conforme [`deploy/slc.yaml`](../../deploy/slc.yaml); ajustar se os hosts mudarem.
+
+| Hostname | Serviço Swarm |
+|----------|----------------|
+| `sousalimaconsultoria.com.br`, `www.sousalimaconsultoria.com.br` | `frontend` |
+| `static.sousalimaconsultoria.com.br` | `static` |
+| `api.sousalimaconsultoria.com.br` | `app` |
+
+Registos **A** (e **AAAA** se aplicável) devem apontar para o IP que recebe **80/tcp** e **443/tcp** (normalmente o nó manager onde o Traefik publica portas em modo `host`, ou load balancer à frente).
+
+---
+
+## 3. Pré-requisitos no servidor
+
+### 3.1 Docker Swarm
+
+```bash
+docker info | grep -i swarm   # Swarm: active
+# Se necessário: docker swarm init
+```
+
+### 3.2 Rede partilhada com o Traefik
+
+```bash
+docker network create --driver overlay traefik-public
+```
+
+(Ignorar erro se a rede já existir.)
+
+### 3.3 Diretórios no host (persistência)
+
+Bind mounts — **não** usar volumes nomeados Docker para estes dados. Criar no **mesmo nó** (ou em **todos** os nós que executarem réplicas que usem estes paths; ver §8).
+
+```bash
+sudo mkdir -p /srv/sistemas/slc/data/storage/app/public
+sudo mkdir -p /srv/sistemas/slc/data/postgres
+sudo mkdir -p /srv/sistemas/slc/data/redis
+```
+
+Permissões: alinhar o dono ao utilizador PHP dentro da imagem (ex.: `www-data` ou UID exposto pela imagem `eolimabr/php8.4-sousalima-multitenant`).
+
+```bash
+# Exemplo (confirmar UID/GID no Dockerfile ou com: docker run --rm ... id)
+sudo chown -R www-data:www-data /srv/sistemas/slc/data/storage
+sudo chown -R 70:70 /srv/sistemas/slc/data/postgres    # postgres:16-alpine
+sudo chown -R 999:1000 /srv/sistemas/slc/data/redis    # redis:7-alpine
+```
+
+O diretório **`frontend/dist`** (na raiz do clone, gerado pelo build Astro) pode ser propriedade de root ou do utilizador de deploy, desde que o contentor nginx consiga ler (`read_only: true`, ficheiros `644` / pastas `755`).
+
+**PostgreSQL:** o diretório `data/postgres` tem de estar **vazio** na primeira subida (ou já conter um cluster inicializado por esta mesma versão major). Não apagar em produção sem backup.
+
+### 3.4 Certificados ACME (Traefik)
+
+No host do Traefik (ex.: `/srv/swarm/letsencrypt`):
+
+```bash
+sudo mkdir -p /srv/swarm/letsencrypt
+sudo touch /srv/swarm/letsencrypt/acme.json
+sudo chmod 600 /srv/swarm/letsencrypt/acme.json
+```
+
+### 3.5 Secrets do Swarm (Laravel)
+
+Criar **uma vez** (valores não versionados):
+
+```bash
+echo -n 'valor-seguro-da-base' | docker secret create slc_sousalima_db_password -
+echo -n 'password-smtp-o365' | docker secret create slc_sousalima_smtp_password -
+```
+
+Para **APP_KEY** e **JWT**, usar geração adequada — ver [guia-deploy-e-atualizacao.md](../../deploy/guia-deploy-e-atualizacao.md) (`php artisan key:generate --show` e `openssl rand` para `slc_sousalima_jwt_secret`).
+
+Os nomes usam o prefixo **`slc_sousalima_`** para não colidir com secrets de outras stacks no mesmo servidor. Os ficheiros no contentor são `/run/secrets/slc_sousalima_*` (ver [`deploy/laravel/README.md`](../../deploy/laravel/README.md)).
+
+O `slc.yaml` define `DB_PASSWORD_FILE`, `APP_KEY_FILE`, `JWT_SECRET_FILE` e `MAIL_PASSWORD_FILE` com esses caminhos. No **Laravel**, em `config/database.php` (e `mail.php` para Office 365), usar a password a partir do ficheiro quando a variável em claro não estiver definida, por exemplo:
+
+```php
+'password' => env('DB_PASSWORD') ?: (
+    env('DB_PASSWORD_FILE') && is_readable(env('DB_PASSWORD_FILE'))
+        ? trim(file_get_contents(env('DB_PASSWORD_FILE')))
+        : ''
+),
+```
+
+`APP_KEY`, JWT e password SMTP: ver snippets em [`deploy/laravel/README.md`](../../deploy/laravel/README.md) (`APP_KEY_FILE`, `JWT_SECRET_FILE`, `mail.php`).
+
+### 3.6 PostgreSQL e Redis (na mesma stack)
+
+Os serviços **`postgres`** e **`redis`** estão definidos em [`deploy/slc.yaml`](../../deploy/slc.yaml), na rede **`internal`**, com persistência em disco no host (`data/postgres`, `data/redis`). O hostname `postgres` / `redis` corresponde ao nome do serviço no Swarm.
+
+Na **primeira** subida, o Postgres cria a base `slc_admin` e o utilizador `slc_user` com a password do secret `slc_sousalima_db_password` (via `POSTGRES_PASSWORD_FILE`).
+
+**Migração a partir de nomes antigos** (`slc_db_password`, etc.): criar os novos secrets com os valores corretos, atualizar o stack com o `slc.yaml` atual e, quando validado, remover os secrets antigos com `docker secret rm` (após a stack já não os referenciar).
+
+---
+
+## 4. Imagem da aplicação Laravel
+
+O `slc.yaml` usa:
+
+`eolimabr/php8.4-sousalima-multitenant:latest`
+
+Fluxo típico:
+
+1. Build da imagem a partir do repositório **admin (Laravel)** no CI ou localmente.
+2. `docker push` para o registo privado (Docker Hub ou outro).
+3. Em cada deploy, `docker stack deploy` puxa a tag desejada; **fixar tag** (ex. `:1.2.3`) em produção em vez de `latest` quando possível.
+
+---
+
+## 5. Build do site (Astro) e publicação no host
+
+O frontend não embute o build na imagem nginx: o conteúdo vem de:
+
+`/srv/sistemas/slc/frontend/dist`
+
+1. No repositório **frontend (Astro)** no servidor (ou em CI), com variáveis de ambiente do build (URL da API, token de leitura se aplicável — ver [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md)):
+
+   ```bash
+   npm ci && npm run build
+   ```
+
+2. Se o build for **fora** do servidor, copiar `dist/` para o mesmo caminho no host:
+
+   ```bash
+   rsync -avz --delete ./dist/ servidor:/srv/sistemas/slc/frontend/dist/
+   ```
+
+3. **Webhook / CI:** após publicar conteúdo no Laravel, o rebuild pode ser automático — [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md).
+
+---
+
+## 6. Subir ou atualizar stacks
+
+### 6.1 Traefik (proxy)
+
+Exemplo (caminho ilustrativo):
+
+```bash
+docker stack deploy -c /srv/swarm/proxy.yml proxy
+```
+
+Confirmar que o resolver ACME se chama **`le`** (ou alterar todas as labels `certresolver=` no `slc.yaml` para o nome usado no Traefik).
+
+### 6.2 Aplicação SLC
+
+A partir da raiz deste repositório no servidor (ou com caminho absoluto ao ficheiro):
+
+```bash
+cd /srv/sistemas/slc
+docker stack deploy -c deploy/slc.yaml slc
+```
+
+O Swarm faz **rolling update** dos serviços alterados; não é obrigatório remover a stack antes.
+
+### 6.3 Verificação rápida
+
+```bash
+docker stack services slc
+docker service ps slc_app --no-trunc
+docker service logs slc_app -f
+docker service logs slc_frontend -f
+docker service logs slc_scheduler -f
+```
+
+Testar HTTPS:
+
+- `https://sousalimaconsultoria.com.br`
+- `https://api.sousalimaconsultoria.com.br`
+- `https://static.sousalimaconsultoria.com.br` (conforme rotas nginx e ficheiros em `storage/app/public`)
+
+---
+
+## 7. Migrações e caches (Laravel)
+
+Após deploy de nova imagem, consoante a prática do projeto:
+
+```bash
+docker exec -it $(docker ps -q -f name=slc_app) php artisan migrate --force
+docker exec -it $(docker ps -q -f name=slc_app) php artisan config:cache
+docker exec -it $(docker ps -q -f name=slc_app) php artisan route:cache
+```
+
+(Ajustar o filtro do nome do contentor ao nome real retornado por `docker service ps slc_app`.)
+
+---
+
+## 8. Swarm, réplicas e bind mounts
+
+Os bind mounts apontam para caminhos **locais do nó**. Se `frontend`, `app` ou `static` tiverem **réplicas > 1** em **nós diferentes**, cada nó precisa dos **mesmos** dados em `/srv/sistemas/slc/data/...` **ou** usar **NFS**/storage partilhado **ou** reduzir réplicas para serviços que dependem desses paths.
+
+---
+
+## 9. Rollback
+
+- **Stack:** voltar a uma versão anterior do ficheiro `deploy/slc.yaml` (ou imagem com tag anterior) e repetir `docker stack deploy`.
+- **Frontend:** restaurar cópia anterior de `frontend/dist` a partir de backup.
+- **Base de dados:** política de backup/restauro fora do âmbito deste runbook (definir em [base-publicacao.md](base-publicacao.md) / operações).
+
+---
+
+## 10. Segurança e compliance
+
+- Cabeçalhos (HSTS, CSP, etc.): [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md).
+- Formulário de leads e API runtime: [formulario-contato-lead-slc.md](formulario-contato-lead-slc.md).
+- LGPD / cookies: [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md).
+
+---
+
+## 11. Documentos relacionados
+
+| Documento | Conteúdo |
+|-----------|----------|
+| [`deploy/slc.yaml`](../../deploy/slc.yaml) | Serviços, labels Traefik, bind mounts, secrets. |
+| [`deploy/README.md`](../../deploy/README.md) | Entrada rápida e link para este procedimento. |
+| [`deploy/guia-deploy-e-atualizacao.md`](../../deploy/guia-deploy-e-atualizacao.md) | Passo a passo: secrets, variáveis, `docker stack deploy`, atualizações e rotação de secrets. |
+| [`deploy/laravel/README.md`](../../deploy/laravel/README.md) | Snippet para `config/database.php` (password via `DB_PASSWORD_FILE`). |
+| [base-publicacao.md](base-publicacao.md) | Visão geral e checklist curto. |
+| [dominios-e-ambiente.md](../definicoes/dominios-e-ambiente.md) | Marca e variáveis em nível conceitual. |
+
+---
+
+## 12. Histórico de alterações ao procedimento
+
+Registar aqui ou em commit/PR quando mudarem hosts, paths no servidor ou nomes de stack.
+
+| Data | Alteração |
+|------|-----------|
+| (preencher) | Primeira versão deste runbook. |
+
+---
+
+## conhecimento/projeto-astro-laravel-institutional.md
+
+# Contexto do projeto — institucional enterprise (Astro + Laravel)
+
+**Objetivo:** site institucional com **excelente performance** (meta: pontuações altas no [PageSpeed Insights](https://pagespeed.web.dev/)), unindo **conversão** (referência [Sagitta Digital](https://sagittadigital.com.br/)) e **autoridade** (referência [Venturus](https://www.venturus.org.br/)).
+
+**Arquitetura de código:** **dois repositórios** — frontend (este escopo: **Astro**) e **admin** (**Laravel** + **Filament**); não monorepo — ver [stack-tecnico-slc.md](../definicoes/stack-tecnico-slc.md). Este documento foca no **site (frontend)** e na **API do admin** consumida no **build**; **área do cliente** é **posterior**.
+
+Documentos relacionados: [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md), [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md), [referencia-layout-sites.md](referencia-layout-sites.md), [conteudo-mensagens-referencia.md](conteudo-mensagens-referencia.md), [qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md), [diretrizes-qualidade-site-slc.md](../definicoes/diretrizes-qualidade-site-slc.md), [tokens-animacao-framer-slc.md](../definicoes/tokens-animacao-framer-slc.md), [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md), [paleta-cores.md](../definicoes/paleta-cores.md), [compliance-ferramentas.md](../definicoes/compliance-ferramentas.md).
+
+---
+
+## 1. Diretrizes de frontend (Astro)
+
+| Tópico | Diretriz |
+|--------|----------|
+| **Framework** | **Astro** — **SSG** por padrão; **modo hybrid** (SSR/API) apenas para rotas que exijam conteúdo protegido ou dinâmico no servidor. |
+| **Estilo** | **Tailwind CSS**. Usar **Bento Grid** e **glassmorphism** onde fizer sentido visual e de hierarquia, sem prejudicar contraste ([WCAG](#4-seo--acessibilidade-wcag-21)). |
+| **Componentes** | **Shadcn/ui** (tipicamente via **React** nas ilhas). Manter interatividade apenas em **Astro Islands** com `client:load` ou `client:visible` conforme necessidade — o restante permanece HTML estático. |
+| **Animações** | **Framer Motion** nas ilhas React — estilo **discreto / enterprise**; tokens (easings, durações, presets) em [tokens-animacao-framer-slc.md](../definicoes/tokens-animacao-framer-slc.md); **`prefers-reduced-motion`** obrigatório; ilhas com animação preferir **`client:visible`**. |
+
+---
+
+## 2. Métricas de performance (Google PageSpeed Insights)
+
+Alinhado a [qualidade-web-core-vitals.md](../definicoes/qualidade-web-core-vitals.md). Metas abaixo são para **boa experiência**; a pontuação sintética (0–100) pode variar entre laboratório e dados de campo (CrUX).
+
+| Métrica | Meta | Notas |
+|---------|------|--------|
+| **LCP** | **≤ 2,5 s** | Imagens acima da dobra: `fetchpriority="high"` e **nunca** `loading="lazy"` no elemento LCP. |
+| **CLS** | **≤ 0,1** | Reservar espaço: `width`/`height` e/ou **`aspect-ratio`** para imagens e ícones. |
+| **INP** | **≤ 200 ms** | Evitar trabalho pesado na main thread; ilhas pequenas e JS sob demanda. |
+| **Imagens** | — | Preferir **`<Image />` do Astro** (otimização e formatos WebP/AVIF conforme configuração), em linha com [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md). |
+
+---
+
+## 3. Integração com backend (Laravel)
+
+| Tópico | Diretriz |
+|--------|----------|
+| **API — conteúdo institucional** | Blog, serviços e páginas estáticas: dados obtidos com **`fetch` no frontmatter** **no build** (SSG); descoberta de rotas (`/api/v1/content/slugs`), contratos TS, imagens com dimensões, Bearer de leitura — ver [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md). |
+| **Atualização após mudanças no CMS** | **Job** + **webhook** de publicação para o CI do frontend — [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md), [integracao-astro-ssg-laravel.md](integracao-astro-ssg-laravel.md). |
+| **Auth — área do cliente** | **Fora do escopo imediato**; quando existir, JWT/cookies HttpOnly conforme [stack-tecnico-slc.md](../definicoes/stack-tecnico-slc.md). |
+| **Dados no cliente** | Onde houver ilhas React no Astro, **TanStack Query** pode gerenciar cache e chamadas à API; no **repo admin (Laravel)**, o fluxo padrão do painel é **Filament**. |
+| **Segurança** | Build: **Bearer** `API_READ_TOKEN` para API de conteúdo; sanitização de HTML no Laravel; CSP — [contrato-api-build-time-slc.md](contrato-api-build-time-slc.md), [normas-arquitetura-backend-infra.md](normas-arquitetura-backend-infra.md). Cookies **HttpOnly** quando houver sessão no admin. |
+
+---
+
+## 4. SEO e acessibilidade (WCAG 2.1)
+
+| Tópico | Diretriz |
+|--------|----------|
+| **Semântica** | HTML5: **`main`**, **`section`**, **`article`**, etc.; **um `h1`** por página ([diretrizes-qualidade-site-slc.md](../definicoes/diretrizes-qualidade-site-slc.md)). |
+| **Schema.org** | Injetar **JSON-LD** para **`Organization`**, **`ProfessionalService`** (ou `Service` conforme o modelo de negócio), **`LocalBusiness`** quando houver endereço — home, contato e serviços. |
+| **A11y** | Contraste mínimo **AA** (validar **glassmorphism** e sobreposições sobre imagens); foco visível; teclado; WCAG 2.1 nível alvo **AA**. |
+
+---
+
+## 5. Regras de código (clean code)
+
+| Tópico | Diretriz |
+|--------|----------|
+| **Nomenclatura** | **PascalCase** para componentes; **kebab-case** para nomes de arquivos quando for convenção do projeto. |
+| **TypeScript** | **`strict`** habilitado; tipar **todas** as interfaces de resposta da API Laravel consumida pelo front. |
+| **Immutabilidade** | Preferir estilo funcional; evitar efeitos colaterais fora de **`useEffect`**, **`useMemo`** ou handlers explícitos nas ilhas React. |
+
+---
+
+## Revisão
+
+Atualizar este documento quando a versão exata do Laravel, domínios de API e estratégia de deploy (CDN, CI) estiverem fechados.
+
+---
+
+## conhecimento/referencia-layout-sites.md
+
+# Referência de layout e conteúdo (inspiração)
+
+Sites externos usados só como **benchmark de arquitetura de informação e UX**. Conteúdo, tom de voz e identidade da **Sousa Lima Consultoria** devem ser próprios, com a [paleta SLC](../definicoes/paleta-cores.md).
+
+Para **mensagens** (MVP, prazos, resultados, provas sociais), ver [conteudo-mensagens-referencia.md](conteudo-mensagens-referencia.md).
+
+## Referências
+
+| Site | Perfil | Link |
+|------|--------|------|
+| **Sagitta Digital** | Institucional compacto, foco em orçamento/MVP, serviços em blocos, FAQ e depoimentos. | [sagittadigital.com.br](https://sagittadigital.com.br/) |
+| **Venturus** | Institucional “enterprise”: mega menu (serviços, mercados, soluções), números de credibilidade, logos de clientes, cases em destaque, blog/podcast, formulário de contato qualificado, versão EN/PT. | [venturus.org.br](https://www.venturus.org.br/) |
+
+Esta tabela é também o **ponto de partida** para a primeira versão de conteúdo (tom e tipos de seção), sem copiar textos — ver [conteudo-juridico-semente.md](../definicoes/conteudo-juridico-semente.md).
+
+## Padrões comuns (úteis para qualquer um dos dois perfis)
+
+| Aspecto | Observação |
+|---------|------------|
+| **Hero** | Proposta de valor + CTA (“fale conosco”, “saiba mais”). |
+| **Serviços** | Cards com título, resumo e link; no perfil Venturus, navegação profunda por linha de negócio. |
+| **Prova social** | Números (+clientes, +anos) e/ou faixa de logos. |
+| **Cases / trabalhos** | Lista com data, título, tempo de leitura e CTA “ver case” (forte no [Venturus](https://www.venturus.org.br/)). |
+| **Conteúdo** | Blog, podcast ou materiais (posiciona autoridade; exige ritmo editorial). |
+| **Contato** | Formulário com campos segmentados (cargo, porte, motivo) quando o público for B2B; newsletter opcional. |
+| **Rodapé** | Endereços, políticas, CNPJ, mapa do site. |
+
+## O que o Venturus reforça em especial
+
+- **Navegação rica**: serviços por linha, mercados verticais, soluções nomeadas, área institucional (sobre, carreira, ESG).
+- **Credibilidade**: blocos numéricos e seção “com a confiança de…” com marcas.
+- **Internacionalização**: seletor de idioma visível (referência para sites bilíngues no futuro).
+- **Insights**: podcast + blog como tráfego de retorno e SEO.
+
+## O que a Sagitta reforça em especial
+
+- **Simplicidade** e leitura rápida para PME e decisão de compra curta.
+- **FAQ** e **depoimentos** próximos à conversão.
+- **Processo** em etapas lineares (ideação → suporte).
+
+## Uso responsável
+
+- Inspirar-se na **ordem das seções** e no **tipo de bloco**, não no texto nem na marca de terceiros.
+- Não reutilizar nomes de produtos, depoimentos ou layouts proprietários sem permissão.
+
+Diretrizes operacionais do site SLC (semântica, budget, CTA, formulários, SEO): [diretrizes-qualidade-site-slc.md](../definicoes/diretrizes-qualidade-site-slc.md).
+
+Mapa do site **MVP** (páginas, rodapé, breadcrumbs, JSON-LD): [mapa-site-mvp-slc.md](mapa-site-mvp-slc.md).
+
+---
+
+## definicoes/compliance-ferramentas.md
+
+# Compliance — ferramentas (LGPD e medição)
+
+Objetivo: atender **LGPD** e boas práticas de **privacidade** sem abandonar métricas úteis para evolução do site.
+
+**Guia operacional (copy, políticas, banner, gate de scripts):** [guia-copy-juridico-lgpd-slc.md](../conhecimento/guia-copy-juridico-lgpd-slc.md).
+
+## Consentimento de cookies — implementação técnica
+
+O consentimento **não** pode ser só texto jurídico na página. É necessário:
+
+| Requisito | Detalhe |
+|-----------|---------|
+| **Bloqueio prévio** | Scripts de analytics/marketing **não** devem carregar antes do consentimento nas categorias exigidas (exceto estritamente necessários). |
+| **Registro da escolha** | Persistir preferência (cookie/local seguro ou backend) e respeitar em visitas seguintes. |
+| **Revogação** | Link “gerenciar cookies” ou equivalente para alterar a escolha. |
+| **Integração com CSP** | Ajustar **Content-Security-Policy** para permitir apenas origens necessárias após opt-in ([normas-arquitetura-backend-infra.md](../conhecimento/normas-arquitetura-backend-infra.md)). |
+
+Ferramentas que encapsulam isso:
+
+| Tipo | Ferramentas / abordagens típicas |
+|------|-----------------------------------|
+| **Banner / gestão de consentimento** | **Cookiebot**, **OneTrust**, **Osano**, **Consent Manager**, ou implementação própria com a mesma lógica de **gate** de scripts. |
+| **Categorias** | Necessários / preferências / analytics / marketing — **injetar** GTM/GA apenas após opt-in quando aplicável. |
+
+## Analytics e performance real
+
+| Tipo | Ferramentas / abordagens típicas |
+|------|-----------------------------------|
+| **Analytics com modo privacidade** | **Google Analytics 4** com **Consent Mode**; **Plausible** / **Fathom** / **Matomo** como alternativas mais enxutas. |
+| **Core Web Vitals em produção** | **Search Console** (CrUX); opcional **web-vitals** no front para endpoint próprio com dados minimizados. |
+
+## Documentos legais
+
+- **Política de privacidade**, **Termos de uso** e **Política de cookies** com base jurídica revisada por profissional habilitado.
+- **Registro de atividades de tratamento** e canal de titulares conforme política interna da SLC.
+
+## Segurança de cabeçalhos
+
+Manter alinhamento com [normas-arquitetura-backend-infra.md](../conhecimento/normas-arquitetura-backend-infra.md) (CSP, HSTS, framing).
+
+Atualizar esta lista quando a stack de deploy (Swarm) e os domínios estiverem fixos.
+
+---
+
+## definicoes/conteudo-juridico-semente.md
+
+# Conteúdo e jurídico — ponto de partida
+
+## Base editorial (não jurídica)
+
+Os **perfis** descritos em [referencia-layout-sites.md](../conhecimento/referencia-layout-sites.md) (tabela *Referências*: Sagitta Digital e Venturus) servem como **inspiração inicial** de tom, seções e tipo de informação (serviços em blocos, FAQ, credibilidade, cases, etc.).
+
+- **Não** copiar textos nem marcas de terceiros.
+- **Sim** usar essa referência para estruturar a primeira versão de copy e, depois, **substituir** por textos originais da Sousa Lima Consultoria e **revisão jurídica** (privacidade, termos, cookies).
+
+## Guia operacional (copy + jurídico + LGPD)
+
+Checklist detalhado: [guia-copy-juridico-lgpd-slc.md](../conhecimento/guia-copy-juridico-lgpd-slc.md).
+
+## Documentos legais
+
+Textos de políticas devem ser **redigidos ou validados por profissional habilitado**; esta documentação não contém modelos legais.
+
+## Ferramentas de compliance
+
+Ver [compliance-ferramentas.md](compliance-ferramentas.md).
+
+---
+
+## definicoes/diretrizes-qualidade-site-slc.md
+
+# Diretrizes de qualidade — estilo referência (Sagitta + Venturus)
+
+Diretrizes para o site institucional da **Sousa Lima Consultoria**, alinhadas à inspiração de estrutura em [referencia-layout-sites.md](../conhecimento/referencia-layout-sites.md), à [paleta de cores](paleta-cores.md) e às métricas em [qualidade-web-core-vitals.md](qualidade-web-core-vitals.md).
+
+## 1. Hierarquia “enterprise” e HTML5 semântico
+
+- Usar **tags semânticas** (`header`, `nav`, `main`, `section`, `article`, `aside`, `footer`) — evitar `div` genérica onde existir elemento com significado.
+- O **`main`** deve envolver o núcleo da página e conter **seções claras**, na ordem que fizer sentido para o conteúdo:
+  - **Hero** — primeira dobra (não existe elemento `<hero>` no HTML5; usar `section` com `id`/`aria-labelledby` ou primeiro `section` com título adequado).
+  - **Serviços** — `section` (ex.: `#services`).
+  - **Cases** — `section` (ex.: `#cases`).
+  - **Prova social** — `section` (ex.: `#social-proof`: números, logos, depoimentos).
+  - **FAQ** — `section` (ex.: `#faq`) ou `aside` se for secundário.
+- Uma única **`h1`** por página; demais títulos em ordem **`h2` → `h3`** sem saltos.
+- Navegação principal em **`nav`** com links para âncoras ou rotas internas coerentes.
+
+## 2. Performance (budget)
+
+| Regra | Detalhe |
+|-------|---------|
+| **Peso por página** | Máximo **1,5 MB** de transferência total (HTML + CSS + JS + imagens + fontes) na carga inicial típica; preferir lazy-load fora da dobra e formatos compactos. |
+| **APIs** | Se houver chamadas a API, respostas com **`Cache-Control`** explícito e alinhado ao tipo de dado (ex.: dados estáveis com `max-age` razoável; nada de `no-store` sem necessidade). |
+| **Ligação com Core Web Vitals** | O budget ajuda LCP e TTFB; revisar [qualidade-web-core-vitals.md](qualidade-web-core-vitals.md) em cada release. |
+| **Animações (Framer Motion)** | Ilhas pequenas, **`client:visible`** quando possível, tokens centralizados — [tokens-animacao-framer-slc.md](tokens-animacao-framer-slc.md). |
+
+## 3. Conversão e UX
+
+| Regra | Detalhe |
+|-------|---------|
+| **CTA** | Botões de ação devem ter **feedback visual imediato** em **hover** e **active** — transição perceptível em **menos de 100 ms** (CSS `transition` curta ou estado instantâneo), sem atraso que prejudique o [INP](qualidade-web-core-vitals.md). |
+| **Formulários** | Formulários com muitos campos: **validação no cliente** (antes do envio), mensagens claras; **máscaras** com `inputmode`, `pattern`, `autocomplete` e APIs nativas quando possível (acessibilidade e teclado mobile). |
+
+## 4. Arquitetura de conteúdo e SEO
+
+- Textos focados em **entidades** do negócio (consultoria, software, cloud, processos, setores atendidos) — vocabulário consistente entre títulos, parágrafos e metadados (**SEO semântico** / entity-first), sem keyword stuffing.
+- Páginas de **cases**: usar **breadcrumb** (`nav` com `aria-label="Breadcrumb"` + lista estruturada ou JSON-LD `BreadcrumbList` quando aplicável) para rastreamento e contexto.
+- Manter coerência com [conteudo-mensagens-referencia.md](../conhecimento/conteudo-mensagens-referencia.md) (MVP, resultados, provas).
+
+## Revisão
+
+Atualizar este documento se o budget de 1,5 MB ou as seções mínimas forem ajustados após protótipo ou auditoria de performance.
+
+---
+
+## definicoes/dominios-e-ambiente.md
+
+# Domínio, marca e ambiente
+
+## Marca e presença online
+
+| Conceito | Definição |
+|----------|-----------|
+| Nome comercial | Sousa Lima Consultoria |
+| Domínio principal | `sousalimaconsultoria.com.br` |
+| **URL canónica (decidido)** | **`https://sousalimaconsultoria.com.br`** — **sem** `www` como endereço principal. |
+| `www` | **Redirecionamento 301** de `https://www.sousalimaconsultoria.com.br` → URL canónica (evita conteúdo duplicado no Google). Implementado no Traefik no serviço `frontend` do [`deploy/slc.yaml`](../../deploy/slc.yaml). |
+| Logo institucional (arquivo) | `docs/sousa-lima-consultoria-logo-horizontal-colorido.png` |
+
+### SEO e links internos
+
+- Gerar sitemaps, `hreflang` (se houver multi-idioma no futuro) e **tags canónicas** no Astro apontando para o host **apex**.
+- Evitar links internos misturando `www` e apex; padronizar **apex** em menus, CTAs e e-mails transacionais.
+
+O apontamento DNS deve incluir registos **A** (ou **AAAA**) para o apex e para **`www`** (ambos para o mesmo destino de entrada do Traefik), para o certificado TLS e o redirecionamento funcionarem.
+
+## Ambientes
+
+| Ambiente | Propósito |
+|----------|-----------|
+| Produção | Tráfego real de usuários e clientes. |
+| Homologação / staging | Testes antes de promover alterações (recomendado quando o time crescer). |
+
+Valores sensíveis (senhas, chaves de API) não devem ser versionados; usar cofres de segredo ou variáveis injetadas no orquestrador.
+
+## Variáveis de ambiente (conceito)
+
+Sem amarrar a um framework específico, a aplicação web costuma precisar de:
+
+| Tipo | Exemplos de preocupação |
+|------|-------------------------|
+| URL pública | Base usada em links e redirecionamentos — alinhar à **URL canónica** (apex). |
+| Banco de dados | Host, porta, nome da base, utilizador, credencial. |
+| Sessão e cache | Onde guardar sessão e cache em produção. |
+| E-mail | SMTP ou provedor transacional, remetente padrão. |
+| Multitenancy (se houver) | Domínio base para subdomínios de cliente e hosts extras para páginas centrais. |
+| Build SSG (CI do **frontend**) | URL base da API do admin, **`API_READ_TOKEN`** (Bearer, leitura só para build), segredos do webhook de rebuild — ver [contrato-api-build-time-slc.md](../conhecimento/contrato-api-build-time-slc.md). |
+
+Documente os nomes exatos das variáveis em **cada** repositório (frontend e admin) quando estiverem definidos.
+
+## Glossário
+
+| Termo | Uso neste projeto |
+|-------|---------------------|
+| **Central** | Área ou dados globais da operação (não específicos de um cliente isolado). |
+| **Tenant** | Instância ou cliente com dados segregados, quando o modelo for multitenant. |
+
+---
+
+## definicoes/paleta-cores.md
+
+# Base de cores — SLC (site / sistema)
+
+Referência visual: logo horizontal colorido em [`sousa-lima-consultoria-logo-horizontal-colorido.png`](../sousa-lima-consultoria-logo-horizontal-colorido.png) (nome de arquivo em **kebab-case** para SEO e URLs estáveis).
+
+## Paleta principal
+
+| Token | Uso sugerido | Hex | Observação |
+|--------|----------------|-----|------------|
+| `--slc-navy` | Títulos, navegação, botões primários, texto de alto destaque | `#332C63` | Roxo-azulado escuro do “SOUSA LIMA” |
+| `--slc-magenta` | Destaques, CTAs secundários, gráficos | `#A64B91` | Extremo do gradiente do ícone (lado esquerdo) |
+| `--slc-purple` | Hover, ícones, chips | `#7D3C8C` | Transição do gradiente no ícone |
+| `--slc-indigo` | Superfícies suaves, bordas de acento | `#534B91` | Parte do gradiente (lado direito do ícone) |
+| `--slc-violet` | Gradientes, sombras coloridas | `#674E94` | Profundidade no ícone |
+| `--slc-grey` | Subtítulos, legendas, bordas neutras | `#808080` | Tom do “CONSULTORIA” |
+
+## Superfícies e texto
+
+| Token | Uso | Hex |
+|--------|-----|-----|
+| `--slc-bg` | Fundo geral (modo claro) | `#FAF9FC` |
+| `--slc-surface` | Cartões, painéis | `#FFFFFF` |
+| `--slc-text` | Corpo de texto sobre fundo claro | `#1F1B2E` |
+| `--slc-text-muted` | Texto secundário | `#5C566B` |
+
+Os hex do logo foram amostrados a partir do arquivo; refine com ferramenta de design se precisar de precisão de marca.
+
+## Gradiente do ícone (referência)
+
+O símbolo combina dois fluxos de cor; para backgrounds ou bordas decorativas:
+
+```css
+--slc-gradient-icon: linear-gradient(
+  135deg,
+  #A64B91 0%,
+  #7D3C8C 35%,
+  #534B91 70%,
+  #674E94 100%
+);
+```
+
+## Bloco CSS (variáveis globais)
+
+```css
+:root {
+  --slc-navy: #332c63;
+  --slc-magenta: #a64b91;
+  --slc-purple: #7d3c8c;
+  --slc-indigo: #534b91;
+  --slc-violet: #674e94;
+  --slc-grey: #808080;
+
+  --slc-bg: #faf9fc;
+  --slc-surface: #ffffff;
+  --slc-text: #1f1b2e;
+  --slc-text-muted: #5c566b;
+
+  --slc-primary: var(--slc-navy);
+  --slc-accent: var(--slc-magenta);
+  --slc-gradient-icon: linear-gradient(
+    135deg,
+    #a64b91 0%,
+    #7d3c8c 35%,
+    #534b91 70%,
+    #674e94 100%
+  );
+}
+```
+
+## Acessibilidade
+
+- Texto longo em **corpo**: preferir `--slc-text` sobre `--slc-bg` ou `--slc-surface`.
+- Texto sobre `--slc-navy`: usar **branco** `#FFFFFF` ou cinza muito claro; validar contraste (mín. **4,5:1** para texto normal, **3:1** para títulos grandes).
+- Evitar colocar texto pequeno só em `--slc-magenta` ou `--slc-grey` sobre fundo claro sem checar contraste.
+
+## Uso na interface
+
+| Elemento | Sugestão |
+|----------|-----------|
+| Cabeçalho / barra superior | Fundo `--slc-surface` ou `--slc-navy` com links claros |
+| Botão primário | Fundo `--slc-navy`, texto branco |
+| Botão secundário | Borda `--slc-indigo`, texto `--slc-navy` |
+| Links | `--slc-magenta` ou `--slc-purple`, sublinhado no hover |
+| Bordas e divisórias | `#E4E0ED` ou `--slc-grey` com opacidade reduzida |
+
+Atualize esta página se a marca publicar guia oficial (Pantone/CMYK) diferente dos valores em tela.
+
+---
+
+## definicoes/qualidade-web-core-vitals.md
+
+# Qualidade de site — Core Web Vitals e diagnóstico (Google)
+
+Referência para exigências de performance e SEO técnico alinhadas ao que o Google usa em **PageSpeed Insights** / **Search Console** e como **sinais de experiência** em busca. Os limiares “bons” podem ser atualizados pelo Google; confira sempre a [documentação oficial de Web Vitals](https://web.dev/vitals) e o [Search Central](https://developers.google.com/search/docs/appearance/core-web-vitals).
+
+## Core Web Vitals (principais)
+
+São as métricas que o Google trata oficialmente como parte da experiência de página (e influenciam ranqueamento junto a outros fatores).
+
+### LCP — Largest Contentful Paint (carregamento)
+
+| | |
+|---|---|
+| **O que é** | Tempo até o **maior elemento visível** na viewport (imagem hero, banner ou bloco de texto grande) estar renderizado. |
+| **Meta “boa”** | ≤ **2,5 s** |
+| **Direção de otimização** | Priorizar o que define o LCP (geralmente imagem ou texto acima da dobra): formatos modernos (AVIF/WebP), tamanho adequado, `fetchpriority="high"` no recurso LCP quando for imagem, pré-carregar fontes críticas, evitar CSS/JS que atrasem a primeira pintura; servidor e CDN rápidos ajudam o caminho até o recurso. |
+
+### INP — Interaction to Next Paint (interatividade)
+
+| | |
+|---|---|
+| **O que é** | Substituiu o antigo **FID** como Core Web Vital. Mede a **latência das interações** (cliques, toques) ao longo da visita: quão rápido a página dá **feedback visual** depois de uma ação. |
+| **Meta “boa”** | ≤ **200 ms** |
+| **Direção de otimização** | Reduzir trabalho pesado na **main thread** (long tasks), dividir ou adiar JS não essencial, otimizar handlers de eventos, considerar `requestIdleCallback` / chunking para trabalho pesado; menos terceiros bloqueando a thread melhora o INP. |
+
+### CLS — Cumulative Layout Shift (estabilidade visual)
+
+| | |
+|---|---|
+| **O que é** | Mede quanto o layout **“pula”** durante o carregamento (ex.: anúncio ou fonte que empurra conteúdo). |
+| **Meta “boa”** | ≤ **0,1** (adimensional) |
+| **Direção de otimização** | Reservar espaço para imagens e embeds (`width`/`height` ou `aspect-ratio`), evitar inserção tardia acima da dobra, cuidar com fontes (FOIT/FOUT), animações que não alterem layout de forma inesperada. |
+
+## Métricas de diagnóstico (dados de laboratório)
+
+Úteis para entender **por que** as Core Web Vitals podem estar ruins; valores “bons” abaixo são referências típicas em ferramentas tipo Lighthouse (podem variar por versão).
+
+| Métrica | Definição | Meta “boa” (referência) |
+|---------|-----------|-------------------------|
+| **FCP** — First Contentful Paint | Tempo até o primeiro conteúdo (texto/imagem) aparecer. | ≤ **1,8 s** |
+| **TBT** — Total Blocking Time | Soma dos intervalos em que a main thread ficou bloqueada por tarefas longas. | ≤ **200 ms** |
+| **SI** — Speed Index | Quão rápido o conteúdo é exibido visualmente durante o carregamento. | ≤ **3,4 s** |
+| **TTFB** — Time to First Byte | Tempo até o primeiro byte da resposta HTTP (servidor/rede). | ≤ **800 ms** |
+
+## Uso no projeto SLC
+
+- Tratar **LCP, INP e CLS** como checklist em **homologação** antes de publicar páginas críticas (home, landing, formulários).
+- **TTFB** alto: olhar hospedagem, cache, origem (CDN) e backend antes de só otimizar front-end.
+- Relatórios do **PageSpeed Insights** combinam campo (CrUX) e laboratório; priorize problemas que aparecem para usuários reais.
+
+---
+
+## definicoes/stack-tecnico-slc.md
+
+# Stack técnico — SLC (definição atual)
+
+## Repositórios — **não** é monorepo
+
+O código fica em **dois projetos Git separados**:
+
+| Projeto | Papel | Stack |
+|---------|--------|--------|
+| **Frontend (site)** | Site institucional público | **Astro** + **Tailwind CSS** |
+| **Admin** | API, CMS/conteúdo, painel visual | **Laravel** + **Filament** + **Tailwind CSS** |
+
+Cada repositório tem **próprio CI/CD**, versionamento e deploy. A comunicação entre eles é por **HTTP (API)** e, no fluxo de publicação do site estático, por **build** + **webhook** entre pipelines — ver [integracao-astro-ssg-laravel.md](../conhecimento/integracao-astro-ssg-laravel.md).
+
+## Visão geral técnica
+
+| Camada | Tecnologia |
+|--------|------------|
+| **Frontend (site)** | **Astro** + **Tailwind CSS** |
+| **Admin (Laravel)** | **Laravel** + **Filament** + **Tailwind CSS** |
+
+### Por que Filament no admin (em vez de front custom separado)?
+
+- **Filament** acelera CRUD de conteúdo e operação diária (Services, Cases, Leads) com pouco código.
+- O painel fica no próprio **Laravel** (guard `web`), reduzindo complexidade de integração e deploy.
+- Mantém foco da equipa no contrato da API e no ciclo de publicação SSG do frontend.
+
+**Next.js** só deve entrar no mapa se houver decisão explícita de **micro-serviço** ou **app separada** (ex.: produto autônomo em outro repositório), integrada ao Laravel **só via API**.
+
+## Frontend (site) + Admin (Laravel)
+
+- **Repo do frontend (Astro):** marketing, SSG, performance — consome a API exposta pelo **repo admin (Laravel)** apenas **no build**; ver [integracao-astro-ssg-laravel.md](../conhecimento/integracao-astro-ssg-laravel.md).
+- **Repo admin (Laravel + Filament):** API para o site, gestão de conteúdo e painel visual em `/admin`.
+
+**Tailwind** unifica estilo entre Astro e o admin Filament, alinhado à [paleta de cores](paleta-cores.md).
+
+Contrato HTTP entre frontend e admin no build: [contrato-api-build-time-slc.md](../conhecimento/contrato-api-build-time-slc.md).
+
+## Área do cliente
+
+**Fora do escopo imediato** do site institucional; evolui na stack Laravel quando priorizado.
+
+---
+
+## definicoes/tokens-animacao-framer-slc.md
+
+# Tokens de animação — Framer Motion + Astro (SLC)
+
+Diretrizes para **consistência visual enterprise**: animações **discretas e suaves**, alinhadas ao **budget de 1,5 MB** por página e às **Astro Islands** com **Framer Motion** ([diretrizes-qualidade-site-slc.md](diretrizes-qualidade-site-slc.md), [projeto-astro-laravel-institutional.md](../conhecimento/projeto-astro-laravel-institutional.md)). Respeitar sempre **`prefers-reduced-motion`**.
+
+---
+
+## 1. Easings (curvas)
+
+| Token | Valor (cubic-bezier) | Uso |
+|-------|----------------------|-----|
+| **`ease-out-expo`** | `[0.16, 1, 0.3, 1]` | Entradas de secção (fade-in / slide-up). |
+| **`standard-smart`** | `[0.4, 0, 0.2, 1]` | Hover em botões e links de navegação. |
+
+No CSS equivalente, reutilizar os mesmos valores em `transition-timing-function` para estados que não passam pelo Framer Motion.
+
+---
+
+## 2. Durações e atrasos
+
+Objetivo: **feedback imediato** nos CTAs (alinhado a **INP ≤ 200 ms** no contexto geral do site — [qualidade-web-core-vitals.md](qualidade-web-core-vitals.md)) e entradas sem sensação de “teatro”.
+
+| Token | Valor | Uso |
+|-------|--------|-----|
+| **`fast`** | `0.1s` ou `0.15s` | Hover e estados **active** de CTAs. |
+| **`moderate`** | `0.4s` | Entrada de componentes principais (ex.: cards de serviços). |
+| **`stagger`** | `0.1s` | Intervalo entre itens em listas (ex.: métricas num Case). |
+
+---
+
+## 3. Presets (referência — frontend Astro)
+
+Ficheiro sugerido: `src/lib/motion-tokens.ts` (ou equivalente no repositório do site).
+
+```typescript
+/** Curvas — manter sincronizadas com a tabela §1 */
+export const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
+export const STANDARD_SMART = [0.4, 0, 0.2, 1] as const;
+
+/** Durações em segundos (Framer Motion) */
+export const DURATION = {
+  fast: 0.15,
+  moderate: 0.4,
+  stagger: 0.1,
+} as const;
+
+export const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: DURATION.moderate, ease: EASE_OUT_EXPO },
+};
+
+export const staggerContainer = {
+  animate: {
+    transition: { staggerChildren: DURATION.stagger },
+  },
+};
+```
+
+---
+
+## 4. `prefers-reduced-motion`
+
+Conforme [projeto-astro-laravel-institutional.md](../conhecimento/projeto-astro-laravel-institutional.md): desativar ou simplificar movimento quando o utilizador o pedir (WCAG).
+
+```typescript
+import { useReducedMotion } from "framer-motion";
+
+const shouldReduceMotion = useReducedMotion();
+
+const animateProps = shouldReduceMotion
+  ? { opacity: 1, y: 0 } // Estático ou só opacidade curta
+  : fadeInUp;
+```
+
+Preferir **sem deslocamento** (`y: 0`) ou **apenas fade** curto; evitar animações longas ou em loop.
+
+---
+
+## 5. Performance no Astro
+
+| Prática | Motivo |
+|---------|--------|
+| **`client:visible`** em ilhas que carregam Framer Motion | O JS da animação só entra quando o bloco **entra na viewport** — protege **LCP** e reduz trabalho inicial na main thread. |
+| **Ilhas pequenas** | Contribui para **INP** e para o budget de **1,5 MB** — [diretrizes-qualidade-site-slc.md](diretrizes-qualidade-site-slc.md). |
+| **Partytown para scripts de terceiros** | Analytics/tags em worker libertam a **main thread** para interação e animações de UI — alinhar a [compliance-ferramentas.md](compliance-ferramentas.md) e CSP. |
+
+---
+
+## Revisão
+
+Ajustar tokens após auditoria de performance (PSI / Web Vitals) ou se o design system evoluir, mantendo o princípio **enterprise: discrição antes de espetáculo**.
+
+---
+
+## README.md
+
+# Sousa Lima Consultoria — conhecimento e definições
+
+Base de documentação interna para evoluir até a publicação do site e dos serviços associados. **Código:** dois projetos separados — **frontend (site Astro)** e **admin (Laravel)** —, não monorepo ([stack-tecnico-slc.md](definicoes/stack-tecnico-slc.md)).
+
+## Estrutura
+
+| Pasta | Uso |
+|--------|-----|
+| `conhecimento/` | Arquitetura, publicação, runbooks e notas técnicas. |
+| `definicoes/` | Glossário, decisões de produto, domínio e convenções. |
+| `admin/` | App **Laravel** (API/painel, base); [admin/README.md](../admin/README.md); pode tornar-se repositório Git separado. |
+| `deploy/` | Stack Swarm (`slc.yaml`), snippets Laravel (`deploy/laravel/`), [guia-deploy-e-atualizacao.md](../deploy/guia-deploy-e-atualizacao.md); ver [deploy/README.md](../deploy/README.md) e [procedimento-deploy-producao-slc.md](conhecimento/procedimento-deploy-producao-slc.md). |
+
+## Documentos
+
+| Documento | Descrição |
+|-----------|-----------|
+| [conhecimento/base-publicacao.md](conhecimento/base-publicacao.md) | Visão de infraestrutura, checklist e evolução para produção. |
+| [conhecimento/procedimento-deploy-producao-slc.md](conhecimento/procedimento-deploy-producao-slc.md) | Runbook: Swarm, Traefik, DNS, secrets, dados no host, build Astro, stack `slc`, verificação e rollback. |
+| [conhecimento/normas-arquitetura-backend-infra.md](conhecimento/normas-arquitetura-backend-infra.md) | SSG/ISR, imagens, terceiros e security headers (CSP, HSTS, framing). |
+| [conhecimento/projeto-astro-laravel-institutional.md](conhecimento/projeto-astro-laravel-institutional.md) | Stack Astro + Laravel 12: frontend, Core Web Vitals, API, JWT, SEO, WCAG, clean code. |
+| [definicoes/dominios-e-ambiente.md](definicoes/dominios-e-ambiente.md) | Marca, domínio canónico (apex), `www`→301, ambientes e variáveis em nível conceitual. |
+| [conhecimento/guia-copy-juridico-lgpd-slc.md](conhecimento/guia-copy-juridico-lgpd-slc.md) | Copy, jurídico (políticas/termos) e cookies LGPD (gate de scripts, checklist). |
+| [definicoes/stack-tecnico-slc.md](definicoes/stack-tecnico-slc.md) | Dois repos: frontend (Astro + Tailwind) e admin (Laravel + Filament). |
+| [conhecimento/integracao-astro-ssg-laravel.md](conhecimento/integracao-astro-ssg-laravel.md) | SSG: API só no build; webhook/rebuild; risco de conteúdo defasado. |
+| [conhecimento/contrato-api-build-time-slc.md](conhecimento/contrato-api-build-time-slc.md) | Contrato primeiro; slugs; Services + Cases (`GET /api/v1/cases`); LCP/CLS; webhook; Bearer; CSP; leads `POST /api/v1/lead/contact` (§6). |
+| [conhecimento/formulario-contato-lead-slc.md](conhecimento/formulario-contato-lead-slc.md) | Formulário segmentado B2B (ilha Astro); `POST /api/v1/lead/contact`; WCAG, LGPD, CSRF, reCAPTCHA; INP &lt; 100 ms. |
+| [conhecimento/exemplo-fixture-case-enterprise-slc.md](conhecimento/exemplo-fixture-case-enterprise-slc.md) | JSON de exemplo Case “Enterprise” + notas de teste no Astro. |
+| [definicoes/conteudo-juridico-semente.md](definicoes/conteudo-juridico-semente.md) | Conteúdo/jurídico: referência inicial e políticas. |
+| [definicoes/compliance-ferramentas.md](definicoes/compliance-ferramentas.md) | LGPD: cookies, analytics, documentos legais. |
+| [definicoes/paleta-cores.md](definicoes/paleta-cores.md) | Base de cores do logo SLC, tokens e variáveis CSS para site/sistema. |
+| [definicoes/tokens-animacao-framer-slc.md](definicoes/tokens-animacao-framer-slc.md) | Easings, durações, presets Framer Motion, `prefers-reduced-motion`, Astro Islands e Partytown. |
+| [definicoes/qualidade-web-core-vitals.md](definicoes/qualidade-web-core-vitals.md) | Core Web Vitals (LCP, INP, CLS) e métricas de diagnóstico (FCP, TBT, SI, TTFB). |
+| [definicoes/diretrizes-qualidade-site-slc.md](definicoes/diretrizes-qualidade-site-slc.md) | Diretrizes SLC: semântica, budget 1,5 MB, CTA/formulários, SEO e breadcrumbs. |
+| [conhecimento/referencia-layout-sites.md](conhecimento/referencia-layout-sites.md) | Inspiração de estrutura e UX ([Sagitta Digital](https://sagittadigital.com.br/), [Venturus](https://www.venturus.org.br/)). |
+| [conhecimento/conteudo-mensagens-referencia.md](conhecimento/conteudo-mensagens-referencia.md) | Mensagens: MVP, prazos, resultados e credibilidade (alinhado às referências). |
+| [conhecimento/planejamento-e-faltantes-site-institucional.md](conhecimento/planejamento-e-faltantes-site-institucional.md) | Fases do projeto, o que já está definido e checklist do que falta. |
+| [conhecimento/mapa-site-mvp-slc.md](conhecimento/mapa-site-mvp-slc.md) | Mapa do site MVP: navegação, legal, SEO, acessibilidade. |
+| [conhecimento/copy-home-v1-slc.md](conhecimento/copy-home-v1-slc.md) | Copy v1 da Home: hero, serviços, método, prova social, FAQ, rodapé. |
+| [conhecimento/copy-servicos-verticais-v1-slc.md](conhecimento/copy-servicos-verticais-v1-slc.md) | Copy v1: Consultoria, Software/MVP, Cloud (API + Astro). |
+
+---

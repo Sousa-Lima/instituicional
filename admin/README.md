@@ -95,6 +95,12 @@ php artisan serve
 - Apenas utilizadores com e-mail nesta whitelist podem aceder ao painel.
 - Em `local`, se `FILAMENT_ADMIN_EMAILS` estiver vazio, o acesso é liberado para acelerar desenvolvimento.
 
+#### OAuth do LinkedIn
+
+- O painel pode iniciar o fluxo OAuth em `/admin/integrations/linkedin/connect`.
+- Configurar `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET` e opcionalmente `LINKEDIN_REDIRECT_URI`.
+- O callback troca o `code` por `access_token` e exibe o token para cadastro no secret `slc_sousalima_linkedin_token`.
+
 #### Próximos passos operacionais
 
 1. Fechar workflow de publicação no painel (status `draft/published` + webhook para rebuild do frontend).
